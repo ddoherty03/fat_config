@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Labrat
+module FatConfig
   # This class is responsible for finding a config files, reading them, and
   # returning a Hash to reflect the configuration.  We use YAML as the
   # configuration format and look for the config file in the standard places.
@@ -24,11 +24,34 @@ module Labrat
     # config files is skipped. Any dir_prefix is pre-pended to search
     # locations environment, xdg and classic config paths so you can run this
     # on a temporary directory set up for testing.
-    def self.read(app_name, base: 'config', dir_prefix: '', xdg: true, verbose: false)
+    #
+    # NOTE: from the Psych documentation, some types are 'deserialized',
+    # meaning they are converted to Ruby objects.  For example, a value of
+    # '10' for a property will be converted to the integer 10.
+    #
+    # Safely load the yaml string in yaml.  By default, only the
+    # following classes are allowed to be deserialized:
+    #
+    # - TrueClass
+    # - FalseClass
+    # - NilClass
+    # - Integer
+    # - Float
+    # - String
+    # - Array
+    # - Hash
+    #
+    # Recursive data structures are not allowed by default.  Arbitrary classes
+    # can be allowed by adding those classes to the permitted_classes
+    # keyword argument.  They are additive.  For example, to allow Date
+    # deserialization:
+    #
+    # Config.read passes anything in the ~permitted_classes~ parameter onto Psych.safe_load.
+    def self.read(app_name, base: 'config', dir_prefix: '', xdg: true, permitted_classes: nil, verbose: false)
       paths = config_paths(app_name, base: base, dir_prefix: dir_prefix, xdg: xdg)
       sys_configs = paths[:system]
       usr_configs = paths[:user]
-      merge_configs_from((sys_configs + usr_configs).compact, verbose: verbose)
+      merge_configs_from((sys_configs + usr_configs).compact, permitted_classes:, verbose: verbose)
     end
 
     def self.config_paths(app_name, base: 'config', dir_prefix: '', xdg: true)
@@ -66,12 +89,17 @@ module Labrat
     # lowest priority to highest priority, starting with an empty hash.  Any
     # values of the top-level hash that are themselves Hashes are merged
     # recursively.
-    def self.merge_configs_from(files = [], verbose: false)
+    def self.merge_configs_from(files = [], verbose: false, permitted_classes: nil)
       hash = {}
       files.each do |f|
         next unless File.readable?(f)
 
-        yml_hash = YAML.load(File.read(f))
+        yml_hash =
+          if permitted_classes
+            Psych.safe_load(File.read(f), permitted_classes:)
+          else
+            Psych.safe_load(File.read(f))
+          end
         next unless yml_hash
 
         if yml_hash.is_a?(Hash)
