@@ -1,7 +1,21 @@
 # frozen_string_literal: true
 
+require 'spec_helper'
+
 module FatConfig
   RSpec.describe FatConfig do
+    # Put files here to test file-system dependent specs.
+    let(:sandbox_dir) { File.join(__dir__, 'support/sandbox') }
+
+    # Put contents in path relative to SANDBOX
+    def setup_test_file(path, content)
+      path = File.expand_path(path)
+      test_path = File.join(sandbox_dir, path)
+      dir_part = File.dirname(test_path)
+      FileUtils.mkdir_p(dir_part) unless Dir.exist?(dir_part)
+      File.write(test_path, content)
+    end
+
     before :each do
       # Save these, since they're not specific to this app.
       @xdg_config_dirs = ENV['XDG_CONFIG_DIRS']
@@ -15,7 +29,7 @@ module FatConfig
       # Remove anything set in examples
       ENV['LABRAT_SYS_CONFIG'] = nil
       ENV['LABRAT_CONFIG'] = nil
-      FileUtils.rm_rf(SANDBOX_DIR)
+      FileUtils.rm_rf(sandbox_dir)
     end
 
     describe 'Basic YAML reading' do
@@ -60,7 +74,7 @@ module FatConfig
         printer: seiko3
       YAML
         setup_test_file('/etc/xdg/labrat/config.yml', config_yml)
-        hsh = Config.read('labrat', xdg: true, dir_prefix: SANDBOX_DIR)
+        hsh = Config.read('labrat', xdg: true, dir_prefix: sandbox_dir)
         expect(hsh[:page_width]).to eq('33mm')
         expect(hsh[:page_height]).to eq('101mm')
         expect(hsh[:delta_x]).to eq('-4mm')
@@ -90,7 +104,7 @@ module FatConfig
 
         # The first directory in the ENV variable list should take precedence.
         ENV['XDG_CONFIG_DIRS'] = "/lib/junk:#{ENV['XDG_CONFIG_DIRS']}:/lib/lowjunk"
-        hsh = Config.read('labrat', xdg: true, dir_prefix: SANDBOX_DIR)
+        hsh = Config.read('labrat', xdg: true, dir_prefix: sandbox_dir)
         # op = ArgParser.new.parse(hsh)
         expect(hsh[:page_width]).to eq('33mm')
         expect(hsh[:page_height]).to eq('101mm')
@@ -115,7 +129,7 @@ module FatConfig
       YAML
         ENV['LABRAT_SYS_CONFIG'] = '/etc/labrat.yml'
         setup_test_file(ENV['LABRAT_SYS_CONFIG'], config_yml)
-        hsh = Config.read('labrat', xdg: true, dir_prefix: SANDBOX_DIR)
+        hsh = Config.read('labrat', xdg: true, dir_prefix: sandbox_dir)
         # op = ArgParser.new.parse(hsh)
         expect(hsh[:page_width]).to eq('33mm')
         expect(hsh[:page_height]).to eq('101mm')
@@ -135,7 +149,7 @@ module FatConfig
         printer: seiko3
       YAML
         setup_test_file("/home/#{ENV['USER']}/.config/labrat/config.yml", config_yml)
-        hsh = Config.read('labrat', xdg: true, dir_prefix: SANDBOX_DIR)
+        hsh = Config.read('labrat', xdg: true, dir_prefix: sandbox_dir)
         expect(hsh[:page_width]).to eq('33mm')
         expect(hsh[:page_height]).to eq('101mm')
         expect(hsh[:delta_x]).to eq('-4mm')
@@ -155,7 +169,7 @@ module FatConfig
       YAML
         ENV['LABRAT_CONFIG'] = "/home/#{ENV['USER']}/.labrc"
         setup_test_file(ENV['LABRAT_CONFIG'], config_yml)
-        hsh = Config.read('labrat', xdg: true, dir_prefix: SANDBOX_DIR)
+        hsh = Config.read('labrat', xdg: true, dir_prefix: sandbox_dir)
         expect(hsh[:page_width]).to eq('33mm')
         expect(hsh[:page_height]).to eq('101mm')
         expect(hsh[:delta_x]).to eq('-4mm')
@@ -179,7 +193,7 @@ module FatConfig
         delta-x: -3mm
       YAML
         setup_test_file("/home/#{ENV['USER']}/.config/labrat/config.yml", usr_config_yml)
-        hsh = Config.read('labrat', xdg: true, dir_prefix: SANDBOX_DIR)
+        hsh = Config.read('labrat', xdg: true, dir_prefix: sandbox_dir)
         expect(hsh[:page_width]).to eq('33mm')
         expect(hsh[:page_height]).to eq('102mm')
         expect(hsh[:delta_x]).to eq('-3mm')
@@ -200,7 +214,7 @@ module FatConfig
 
         # The first directory in the ENV variable list should take precedence.
         ENV['XDG_CONFIG_HOME'] = "~/.foncig"
-        hsh = Config.read('labrat', xdg: true, dir_prefix: SANDBOX_DIR)
+        hsh = Config.read('labrat', xdg: true, dir_prefix: sandbox_dir)
         expect(hsh[:page_width]).to eq('33mm')
         expect(hsh[:page_height]).to eq('101mm')
         expect(hsh[:delta_x]).to eq('-4mm')
@@ -221,7 +235,7 @@ module FatConfig
 
         # The first directory in the ENV variable list should take precedence.
         ENV['XDG_CONFIG_HOME'] = "~/.foncig"
-        hsh = Config.read('labrat', xdg: true, dir_prefix: SANDBOX_DIR)
+        hsh = Config.read('labrat', xdg: true, dir_prefix: sandbox_dir)
         expect(hsh).to be_a Hash
         expect(hsh).to be_empty
       end
@@ -234,7 +248,7 @@ module FatConfig
       YAML
         ENV['LABRAT_SYS_CONFIG'] = '/etc/labrat/config.yaml'
         setup_test_file(ENV['LABRAT_SYS_CONFIG'], config_yml)
-        hsh = Config.read('labrat', xdg: false, dir_prefix: SANDBOX_DIR)
+        hsh = Config.read('labrat', xdg: false, dir_prefix: sandbox_dir)
         expect(hsh).to be_a Hash
         expect(hsh).to be_empty
       end
@@ -250,7 +264,7 @@ module FatConfig
       YAML
         ENV['LABRAT_SYS_CONFIG'] = '/etc/labrat/config.yaml'
         setup_test_file(ENV['LABRAT_SYS_CONFIG'], config_yml)
-        hsh = Config.read('labrat', xdg: false, dir_prefix: SANDBOX_DIR)
+        hsh = Config.read('labrat', xdg: false, dir_prefix: sandbox_dir)
         expect(hsh[:page_width]).to eq('33mm')
         expect(hsh[:page_height]).to eq('101mm')
         expect(hsh[:delta_x]).to eq('-4mm')
@@ -270,7 +284,7 @@ module FatConfig
       YAML
         ENV['LABRAT_SYS_CONFIG'] = '/etc/labrat/config.yaml'
         setup_test_file(ENV['LABRAT_SYS_CONFIG'], config_yml)
-        hsh = Config.read('labrat', xdg: false, dir_prefix: SANDBOX_DIR)
+        hsh = Config.read('labrat', xdg: false, dir_prefix: sandbox_dir)
         expect(hsh[:page_width]).to eq('33mm')
         expect(hsh[:page_height]).to eq('101mm')
         expect(hsh[:delta_x]).to eq('-4mm')
@@ -290,7 +304,7 @@ module FatConfig
       YAML
         ENV['LABRAT_CONFIG'] = '~/junk/random/lr.y'
         setup_test_file(ENV['LABRAT_CONFIG'], config_yml)
-        hsh = Config.read('labrat', xdg: false, dir_prefix: SANDBOX_DIR)
+        hsh = Config.read('labrat', xdg: false, dir_prefix: sandbox_dir)
         expect(hsh[:page_width]).to eq('33mm')
         expect(hsh[:page_height]).to eq('101mm')
         expect(hsh[:delta_x]).to eq('-4mm')
@@ -309,7 +323,7 @@ module FatConfig
         printer: seiko3
       YAML
         setup_test_file('~/.labratrc', config_yml)
-        hsh = Config.read('labrat', xdg: false, dir_prefix: SANDBOX_DIR)
+        hsh = Config.read('labrat', xdg: false, dir_prefix: sandbox_dir)
         expect(hsh[:page_width]).to eq('33mm')
         expect(hsh[:page_height]).to eq('101mm')
         expect(hsh[:delta_x]).to eq('-4mm')
@@ -328,7 +342,7 @@ module FatConfig
         printer: seiko3
       YAML
         setup_test_file('~/.labrat/config', config_yml)
-        hsh = Config.read('labrat', xdg: false, dir_prefix: SANDBOX_DIR)
+        hsh = Config.read('labrat', xdg: false, dir_prefix: sandbox_dir)
         expect(hsh[:page_width]).to eq('33mm')
         expect(hsh[:page_height]).to eq('101mm')
         expect(hsh[:delta_x]).to eq('-4mm')
@@ -356,7 +370,7 @@ module FatConfig
         nl-sep: '~~'
       YAML
         setup_test_file('~/.labrat/config.yml', usr_config_yml)
-        hsh = Config.read('labrat', xdg: false, dir_prefix: SANDBOX_DIR)
+        hsh = Config.read('labrat', xdg: false, dir_prefix: sandbox_dir)
         expect(hsh[:page_width]).to eq('33mm')
         expect(hsh[:page_height]).to eq('102mm')
         expect(hsh[:delta_x]).to eq('-7mm')

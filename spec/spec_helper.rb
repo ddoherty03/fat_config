@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 require "fat_config"
-require 'debug'
+require "debug"
+require "pry"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
@@ -13,22 +14,37 @@ RSpec.configure do |config|
   config.expect_with :rspec do |c|
     c.syntax = :expect
   end
-end
 
-# Conversion factors from given measure to Adobe points
-MM = 2.83464566929
-CM = 28.3464566929
-IN = 72.0
-EPS = 0.000001
+  # This allows you to limit a spec run to individual examples or groups
+  # you care about by tagging them with `:focus` metadata. When nothing
+  # is tagged with `:focus`, all examples get run. RSpec also provides
+  # aliases for `it`, `describe`, and `context` that include `:focus`
+  # metadata: `fit`, `fdescribe` and `fcontext`, respectively.
+  config.filter_run_when_matching :focus
 
-# Put files here to test file-system dependent specs.
-SANDBOX_DIR = File.join(__dir__, 'support/sandbox')
+  # Allows RSpec to persist some state between runs in order to support
+  # the `--only-failures` and `--next-failure` CLI options. We recommend
+  # you configure your source control system to ignore this file.
+  config.example_status_persistence_file_path = "spec/examples.txt"
 
-# Put contents in path relative to SANDBOX
-def setup_test_file(path, content)
-  path = File.expand_path(path)
-  test_path = File.join(SANDBOX_DIR, path)
-  dir_part = File.dirname(test_path)
-  FileUtils.mkdir_p(dir_part) unless Dir.exist?(dir_part)
-  File.write(test_path, content)
+  # Limits the available syntax to the non-monkey patched syntax that is
+  # recommended. For more details, see:
+  # https://rspec.info/features/3-12/rspec-core/configuration/zero-monkey-patching-mode/
+  config.disable_monkey_patching!
+
+  # This setting enables warnings. It's recommended, but in some cases may
+  # be too noisy due to issues in dependencies.
+  config.warnings = false
+
+  # Run specs in random order to surface order dependencies. If you find an
+  # order dependency and want to debug it, you can fix the order by providing
+  # the seed, which is printed after each run.
+  #     --seed 1234
+  config.order = :random
+
+  # Seed global randomization in this process using the `--seed` CLI option.
+  # Setting this allows you to use `--seed` to deterministically reproduce
+  # test failures related to randomization by passing the same `--seed` value
+  # as the one that triggered the failure.
+  Kernel.srand config.seed
 end
