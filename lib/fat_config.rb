@@ -7,7 +7,8 @@ require 'tomlib'
 
 require_relative "fat_config/version"
 require_relative "hash_ext"
-require_relative "fat_config/config"
+require_relative "fat_config/reader"
+require_relative "fat_config/styles"
 
 module FatConfig
   class Error < StandardError; end

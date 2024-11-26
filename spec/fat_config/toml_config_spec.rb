@@ -4,7 +4,7 @@ require 'spec_helper'
 
 module FatConfig
   RSpec.describe FatConfig do
-    context "YAML Config Files" do
+    context "TOML Config Files" do
       # Put files here to test file-system dependent specs.
       let(:sandbox_dir) { File.join(__dir__, 'support/sandbox') }
 
@@ -33,54 +33,50 @@ module FatConfig
         FileUtils.rm_rf(sandbox_dir)
       end
 
-      describe 'Basic YAML reading' do
-        let(:reader) { Reader.new('labrat') }
-        let(:yaml_str) do
-          <<~YAML
-          ---
-          doe: "a deer, a female deer"
-          ray: "a drop of golden sun"
-          pi: 3.14159
-          xmas: true
-          french-hens: 3
-          calling-birds:
-            - huey
-            - dewey
-            - louie
-            - fred
-          xmas-fifth-day: 2024-12-24
-          french-hens: 3
-          golden-rings: 5
-          partridges:
-            count: 1
-            location: "a pear tree"
-          turtle-doves: two
-        YAML
+      describe 'Basic TOML reading' do
+        let(:reader) { Reader.new('labrat', config_lang: toml) }
+        let(:toml_str) do
+          <<~TOML
+          doe = "a deer, a female deer"
+          ray = "a drop of golden sun"
+          pi = 3.14159
+          xmas = true
+          french-hens = 3
+          calling-birds = [ "huey", "dewey", "louie", "fred" ]
+          xmas-fifth-day = ""
+          golden-rings = 5
+          turtle-doves = "two"
+          the-day = 2024-12-24
+
+          [partridges]
+          count = 1
+          location = "a pear tree"
+        TOML
         end
 
-        it 'can read a yaml string' do
-          hsh = Psych.safe_load(yaml_str, symbolize_names: true, permitted_classes: [Date])
+        it 'can read a toml string' do
+          hsh = Tomlib.load(toml_str)
           hsh = hsh.methodize
           expect(hsh.keys).to include(:doe)
           expect(hsh.keys).to include(:french_hens)
           expect(hsh[:calling_birds]).to be_an Array
-          expect(hsh[:xmas_fifth_day]).to be_a Date
+          expect(hsh[:the_day]).to be_a Date
         end
       end
 
       describe 'Reading XDG config files' do
-        let(:reader) { Reader.new('labrat', root_prefix: sandbox_dir) }
+        let(:reader) { Reader.new('labrat', config_style: :toml, root_prefix: sandbox_dir) }
 
         it 'reads an xdg system config file' do
-          config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
-          setup_test_file('/etc/xdg/labrat/config.yml', config_yml)
+          config_tml = <<~TOML
+          page-width = "33mm"
+          page-height = "101mm"
+          delta-x = "-4mm"
+          delta-y = "1cm"
+          nl-sep = '%%'
+          printer = "seiko3"
+        TOML
+          setup_test_file('/etc/xdg/labrat/config.yml', config_tml)
 
           hsh = reader.read
           expect(hsh[:page_width]).to eq('33mm')
@@ -93,25 +89,26 @@ module FatConfig
 
         it 'reads an XDG_CONFIG_DIRS xdg system directory config file' do
           # Higher priority XDG
-          config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl_sep: '%%'
-        YAML
-          setup_test_file('/lib/junk/labrat/config.yml', config_yml)
+          config_tml = <<~TOML
+          page-width = "33mm"
+          page-height = "101mm"
+          delta-x = "-4mm"
+          delta-y = "1cm"
+          nl-sep = '%%'
+        TOML
+          setup_test_file('/lib/junk/labrat/config.yml', config_tml)
 
           # Lower priority XDG
-          config2_yml = <<~YAML
-          page-width: 3cm
-          page-height: 10cm
-          delta-x: -4pt
-          printer: dymo4
-          rows: 10
-          columns: 3
-        YAML
-          setup_test_file('/lib/lowjunk/labrat/config.yml', config2_yml)
+          config2_tml = <<~TOML
+          page-width = "3cm"
+          page-height = "10cm"
+          delta-x =  "-4pt"
+          delta-y = "1cm"
+          printer = "dymo4"
+          rows = 10
+          columns = 3
+        TOML
+          setup_test_file('/lib/lowjunk/labrat/config.yml', config2_tml)
 
           # The first directory in the ENV variable list should take precedence.
           ENV['XDG_CONFIG_DIRS'] = "/lib/junk:#{ENV['XDG_CONFIG_DIRS']}:/lib/lowjunk"
@@ -129,16 +126,16 @@ module FatConfig
         end
 
         it 'reads an xdg system ENV-specified config file' do
-          config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
+          config_tml = <<~TOML
+          page-width = "33mm"
+          page-height = "101mm"
+          delta-x = "-4mm"
+          delta-y = "1cm"
+          nl-sep = '%%'
+          printer = "seiko3"
+        TOML
           ENV['LABRAT_SYS_CONFIG'] = '/etc/labrat.yml'
-          setup_test_file(ENV['LABRAT_SYS_CONFIG'], config_yml)
+          setup_test_file(ENV['LABRAT_SYS_CONFIG'], config_tml)
           hsh = reader.read
           # op = ArgParser.new.parse(hsh)
           expect(hsh[:page_width]).to eq('33mm')
@@ -150,15 +147,15 @@ module FatConfig
         end
 
         it 'reads an xdg user config file' do
-          config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
-          setup_test_file("/home/#{ENV['USER']}/.config/labrat/config.yml", config_yml)
+          config_tml = <<~TOML
+          page-width = "33mm"
+          page-height = "101mm"
+          delta-x = "-4mm"
+          delta-y = "1cm"
+          nl-sep = '%%'
+          printer = "seiko3"
+        TOML
+          setup_test_file("/home/#{ENV['USER']}/.config/labrat/config.yml", config_tml)
           hsh = reader.read
           expect(hsh[:page_width]).to eq('33mm')
           expect(hsh[:page_height]).to eq('101mm')
@@ -169,16 +166,16 @@ module FatConfig
         end
 
         it 'reads an xdg ENV-specified user config file' do
-          config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
+          config_tml = <<~TOML
+          page-width = "33mm"
+          page-height = "101mm"
+          delta-x = "-4mm"
+          delta-y = "1cm"
+          nl-sep = '%%'
+          printer = "seiko3"
+        TOML
           ENV['LABRAT_CONFIG'] = "/home/#{ENV['USER']}/.labrc"
-          setup_test_file(ENV['LABRAT_CONFIG'], config_yml)
+          setup_test_file(ENV['LABRAT_CONFIG'], config_tml)
 
           hsh = reader.read
           expect(hsh[:page_width]).to eq('33mm')
@@ -190,20 +187,20 @@ module FatConfig
         end
 
         it 'merges an xdg user config into an xdg system config file' do
-          sys_config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
-          setup_test_file('/etc/xdg/labrat/config.yml', sys_config_yml)
-          usr_config_yml = <<~YAML
-          page-height: 102mm
-          delta-x: -3mm
-        YAML
-          setup_test_file("/home/#{ENV['USER']}/.config/labrat/config.yml", usr_config_yml)
+          sys_config_tml = <<~TOML
+          page-width = "33mm"
+          page-height = "101mm"
+          delta-x = "-4mm"
+          delta-y = "1cm"
+          nl-sep = '%%'
+          printer = "seiko3"
+        TOML
+          setup_test_file('/etc/xdg/labrat/config.yml', sys_config_tml)
+          usr_config_tml = <<~TOML
+          page-height = "102mm"
+          delta-x = "-3mm"
+        TOML
+          setup_test_file("/home/#{ENV['USER']}/.config/labrat/config.yml", usr_config_tml)
 
           hsh = reader.read
           expect(hsh[:page_width]).to eq('33mm')
@@ -215,14 +212,14 @@ module FatConfig
         end
 
         it 'reads an XDG_CONFIG_HOME xdg user directory config file' do
-          config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-        YAML
-          setup_test_file('~/.foncig/labrat/config.yml', config_yml)
+          config_tml = <<~TOML
+          page-width = "33mm"
+          page-height = "101mm"
+          delta-x = "-4mm"
+          delta-y = "1cm"
+          nl-sep = '%%'
+        TOML
+          setup_test_file('~/.foncig/labrat/config.yml', config_tml)
 
           # The first directory in the ENV variable list should take precedence.
           ENV['XDG_CONFIG_HOME'] = "~/.foncig"
@@ -247,10 +244,10 @@ module FatConfig
       end
 
       describe 'Reading classic config files' do
-        let(:reader) { Reader.new('labrat', xdg: false, root_prefix: sandbox_dir) }
+        let(:reader) { Reader.new('labrat', xdg: false, config_style: :toml, root_prefix: sandbox_dir) }
 
         it 'read an empty classic system config file' do
-          ENV['LABRAT_SYS_CONFIG'] = '/etc/labrat/config.yaml'
+          ENV['LABRAT_SYS_CONFIG'] = '/etc/labrat/config.toml'
           setup_test_file(ENV['LABRAT_SYS_CONFIG'], '')
           hsh = reader.read
           expect(hsh).to be_a Hash
@@ -258,16 +255,16 @@ module FatConfig
         end
 
         it 'reads a classic system config file' do
-          config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
-          ENV['LABRAT_SYS_CONFIG'] = '/etc/labrat/config.yaml'
-          setup_test_file(ENV['LABRAT_SYS_CONFIG'], config_yml)
+          config_tml = <<~TOML
+          page-width = "33mm"
+          page-height = "101mm"
+          delta-x = "-4mm"
+          delta-y = "1cm"
+          nl-sep = '%%'
+          printer = "seiko3"
+        TOML
+          ENV['LABRAT_SYS_CONFIG'] = '/etc/labrat/config.toml'
+          setup_test_file(ENV['LABRAT_SYS_CONFIG'], config_tml)
 
           hsh = reader.read
           expect(hsh[:page_width]).to eq('33mm')
@@ -279,15 +276,15 @@ module FatConfig
         end
 
         it 'reads a classic user config file' do
-          config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
-          setup_test_file("/home/#{ENV['USER']}/.labrat.yml", config_yml)
+          config_tml = <<~TOML
+          page-width = "33mm"
+          page-height = "101mm"
+          delta-x = "-4mm"
+          delta-y = "1cm"
+          nl-sep = '%%'
+          printer = "seiko3"
+        TOML
+          setup_test_file("/home/#{ENV['USER']}/.labrat.yml", config_tml)
           hsh = reader.read
           expect(hsh[:page_width]).to eq('33mm')
           expect(hsh[:page_height]).to eq('101mm')
@@ -298,16 +295,16 @@ module FatConfig
         end
 
         it 'reads a classic user config file in ENV[\'LABRAT_CONFIG\']' do
-          config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
+          config_tml = <<~TOML
+          page-width = "33mm"
+          page-height = "101mm"
+          delta-x = "-4mm"
+          delta-y = "1cm"
+          nl-sep = '%%'
+          printer = "seiko3"
+        TOML
           ENV['LABRAT_CONFIG'] = '~/junk/random/lr.y'
-          setup_test_file(ENV['LABRAT_CONFIG'], config_yml)
+          setup_test_file(ENV['LABRAT_CONFIG'], config_tml)
           hsh = reader.read
           expect(hsh[:page_width]).to eq('33mm')
           expect(hsh[:page_height]).to eq('101mm')
@@ -318,15 +315,15 @@ module FatConfig
         end
 
         it "reads a classic user rc-style config file in HOME" do
-          config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
-          setup_test_file('~/.labratrc', config_yml)
+          config_tml = <<~TOML
+          page-width = "33mm"
+          page-height = "101mm"
+          delta-x = "-4mm"
+          delta-y = "1cm"
+          nl-sep = '%%'
+          printer = "seiko3"
+        TOML
+          setup_test_file('~/.labratrc', config_tml)
           hsh = reader.read
           expect(hsh[:page_width]).to eq('33mm')
           expect(hsh[:page_height]).to eq('101mm')
@@ -337,15 +334,15 @@ module FatConfig
         end
 
         it 'reads a classic ~/.labrat config dir in HOME' do
-          config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
-          setup_test_file('~/.labrat/config', config_yml)
+          config_tml = <<~TOML
+          page-width = "33mm"
+          page-height = "101mm"
+          delta-x = "-4mm"
+          delta-y = "1cm"
+          nl-sep = '%%'
+          printer = "seiko3"
+        TOML
+          setup_test_file('~/.labrat/config', config_tml)
           hsh = reader.read
           expect(hsh[:page_width]).to eq('33mm')
           expect(hsh[:page_height]).to eq('101mm')
@@ -356,23 +353,23 @@ module FatConfig
         end
 
         it 'reads a classic system and user config files' do
-          sys_config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
-          ENV['LABRAT_SYS_CONFIG'] = '/etc/labrat/config.yaml'
-          setup_test_file(ENV['LABRAT_SYS_CONFIG'], sys_config_yml)
-          usr_config_yml = <<~YAML
-          page-height: 102mm
-          delta-x: -7mm
-          delta-y: +30mm
-          nl-sep: '~~'
-        YAML
-          setup_test_file('~/.labrat/config.yml', usr_config_yml)
+          sys_config_tml = <<~TOML
+          page-width = "33mm"
+          page-height = "101mm"
+          delta-x = "-4mm"
+          delta-y = "1cm"
+          nl-sep = '%%'
+          printer = "seiko3"
+        TOML
+          ENV['LABRAT_SYS_CONFIG'] = '/etc/labrat/config.toml'
+          setup_test_file(ENV['LABRAT_SYS_CONFIG'], sys_config_tml)
+          usr_config_tml = <<~TOML
+          page-height = "102mm"
+          delta-x = "-7mm"
+          delta-y = "+30mm"
+          nl-sep = '~~'
+        TOML
+          setup_test_file('~/.labrat/config.yml', usr_config_tml)
 
           hsh = reader.read
           expect(hsh[:page_width]).to eq('33mm')
