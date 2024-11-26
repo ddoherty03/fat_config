@@ -3,6 +3,7 @@
 require 'fileutils'
 require 'psych'
 require 'active_support/core_ext/hash'
+require 'tomlib'
 
 require_relative "fat_config/version"
 require_relative "hash_ext"
