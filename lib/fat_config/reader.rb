@@ -120,7 +120,7 @@ module FatConfig
       xdg_search_dirs.each do |dir|
         dir = File.expand_path(File.join(dir, app_name))
         dir = File.join(root_prefix, dir) unless root_prefix.nil? || root_prefix.strip.empty?
-        base_candidates = merger.xdg_base_names(app_name)
+        base_candidates = merger.dir_constrained_base_names(app_name)
         config_fname = base_candidates.find { |b| File.readable?(File.join(dir, b)) }
         configs << File.join(dir, config_fname) if config_fname
       end
@@ -141,7 +141,7 @@ module FatConfig
       dir = File.join(root_prefix, dir) unless root_prefix.strip.empty?
       return unless Dir.exist?(dir)
 
-      base_candidates = merger.xdg_base_names(app_name)
+      base_candidates = merger.dir_constrained_base_names(app_name)
       config_fname = base_candidates.find { |b| File.readable?(File.join(dir, b)) }
       if config_fname
         File.join(dir, config_fname)
@@ -186,13 +186,13 @@ module FatConfig
       if env_config && File.readable?((config = File.join(root_prefix, File.expand_path(env_config))))
         config_fname = config
       elsif Dir.exist?(config_dir = File.join(root_prefix, File.expand_path("~/.#{app_name}")))
-        base_candidates = merger.classic_base_names(app_name)
+        base_candidates = merger.dir_constrained_base_names(app_name)
         base_fname = base_candidates.find { |b| File.readable?(File.join(config_dir, b)) }
-        config_fname = File.join(config_dir, base_fname)
+        config_fname = File.join(config_dir, base_fname) if base_fname
       elsif Dir.exist?(config_dir = File.join(root_prefix, File.expand_path('~/')))
         base_candidates = merger.dotted_base_names(app_name)
         base_fname = base_candidates.find { |b| File.readable?(File.join(config_dir, b)) }
-        config_fname = File.join(config_dir, base_fname)
+        config_fname = File.join(config_dir, base_fname)  if base_fname
       end
       config_fname
     end

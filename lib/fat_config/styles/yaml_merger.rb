@@ -46,19 +46,10 @@ module FatConfig
       hash
     end
 
-    def xdg_base_names(app_name)
-      [
-        app_name.to_s,
-        "#{app_name}.yml",
-        "#{app_name}.yaml",
-        "config.yml",
-        "config.yaml",
-        "#{app_name}.cfg",
-        "#{app_name}.config"
-      ]
-    end
-
-    def classic_base_names(app_name)
+    # Return a list of possible YAML configuration file basenames where the
+    # directory path already DOES NOT include the app_name so that the
+    # basename itself must be distingashable as belonging to the app.
+    def constrained_base_names(app_name)
       [
         app_name.to_s,
         "#{app_name}.yml",
@@ -68,6 +59,21 @@ module FatConfig
       ]
     end
 
+    # Return a list of possible YAML configuration file basenames where the
+    # directory path already includes the app_name so that it need not be
+    # included in the basename itself.
+    def dir_constrained_base_names(app_name)
+      constrained_base_names(app_name) +
+        [
+          "config",
+          "config.yml",
+          "config.yaml",
+        ]
+    end
+
+    # Return a list of possible YAML configuration file basenames as might be
+    # placed in the user's home directory as a hidden file, but which need to
+    # contain a component of the app_name to distinguish it.
     def dotted_base_names(app_name)
       [
         ".#{app_name}",

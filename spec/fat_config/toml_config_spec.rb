@@ -76,7 +76,7 @@ module FatConfig
           nl-sep = '%%'
           printer = "seiko3"
         TOML
-          setup_test_file('/etc/xdg/labrat/config.yml', config_tml)
+          setup_test_file('/etc/xdg/labrat/config.toml', config_tml)
 
           hsh = reader.read
           expect(hsh[:page_width]).to eq('33mm')
@@ -96,7 +96,7 @@ module FatConfig
           delta-y = "1cm"
           nl-sep = '%%'
         TOML
-          setup_test_file('/lib/junk/labrat/config.yml', config_tml)
+          setup_test_file('/lib/junk/labrat/config.toml', config_tml)
 
           # Lower priority XDG
           config2_tml = <<~TOML
@@ -108,7 +108,7 @@ module FatConfig
           rows = 10
           columns = 3
         TOML
-          setup_test_file('/lib/lowjunk/labrat/config.yml', config2_tml)
+          setup_test_file('/lib/lowjunk/labrat/config.toml', config2_tml)
 
           # The first directory in the ENV variable list should take precedence.
           ENV['XDG_CONFIG_DIRS'] = "/lib/junk:#{ENV['XDG_CONFIG_DIRS']}:/lib/lowjunk"
@@ -155,7 +155,7 @@ module FatConfig
           nl-sep = '%%'
           printer = "seiko3"
         TOML
-          setup_test_file("/home/#{ENV['USER']}/.config/labrat/config.yml", config_tml)
+          setup_test_file("/home/#{ENV['USER']}/.config/labrat/config.toml", config_tml)
           hsh = reader.read
           expect(hsh[:page_width]).to eq('33mm')
           expect(hsh[:page_height]).to eq('101mm')
@@ -195,12 +195,12 @@ module FatConfig
           nl-sep = '%%'
           printer = "seiko3"
         TOML
-          setup_test_file('/etc/xdg/labrat/config.yml', sys_config_tml)
+          setup_test_file('/etc/xdg/labrat/config.toml', sys_config_tml)
           usr_config_tml = <<~TOML
           page-height = "102mm"
           delta-x = "-3mm"
         TOML
-          setup_test_file("/home/#{ENV['USER']}/.config/labrat/config.yml", usr_config_tml)
+          setup_test_file("/home/#{ENV['USER']}/.config/labrat/config.toml", usr_config_tml)
 
           hsh = reader.read
           expect(hsh[:page_width]).to eq('33mm')
@@ -219,7 +219,7 @@ module FatConfig
           delta-y = "1cm"
           nl-sep = '%%'
         TOML
-          setup_test_file('~/.foncig/labrat/config.yml', config_tml)
+          setup_test_file('~/.foncig/labrat/config.toml', config_tml)
 
           # The first directory in the ENV variable list should take precedence.
           ENV['XDG_CONFIG_HOME'] = "~/.foncig"
@@ -233,7 +233,7 @@ module FatConfig
         end
 
         it 'reads an empty XDG_CONFIG_HOME xdg user directory config file' do
-          setup_test_file('~/.foncig/labrat/config.yml', '')
+          setup_test_file('~/.foncig/labrat/config.toml', '')
 
           # The first directory in the ENV variable list should take precedence.
           ENV['XDG_CONFIG_HOME'] = "~/.foncig"
@@ -284,7 +284,7 @@ module FatConfig
           nl-sep = '%%'
           printer = "seiko3"
         TOML
-          setup_test_file("/home/#{ENV['USER']}/.labrat.yml", config_tml)
+          setup_test_file("/home/#{ENV['USER']}/.labrat.toml", config_tml)
           hsh = reader.read
           expect(hsh[:page_width]).to eq('33mm')
           expect(hsh[:page_height]).to eq('101mm')
@@ -369,7 +369,7 @@ module FatConfig
           delta-y = "+30mm"
           nl-sep = '~~'
         TOML
-          setup_test_file('~/.labrat/config.yml', usr_config_tml)
+          setup_test_file('~/.labrat/config.toml', usr_config_tml)
 
           hsh = reader.read
           expect(hsh[:page_width]).to eq('33mm')
