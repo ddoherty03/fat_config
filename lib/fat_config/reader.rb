@@ -37,6 +37,8 @@ module FatConfig
           TOMLMerger.new
         when :ini
           INIMerger.new
+        when :json
+          JSONMerger.new
         else
           msg = "config style must be one of #{VALID_CONFIG_STYLES.join(', ')}"
           raise ArgumentError, msg

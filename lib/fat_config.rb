@@ -5,6 +5,7 @@ require 'fileutils'
 require 'psych'
 require 'tomlib'
 require 'inifile'
+require 'json'
 
 require_relative "fat_config/version"
 require_relative "hash_ext"
