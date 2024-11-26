@@ -35,9 +35,11 @@ module FatConfig
           YAMLMerger.new
         when :toml
           TOMLMerger.new
+        when :ini
+          INIMerger.new
         else
           msg = "config style must be one of #{VALID_CONFIG_STYLES.join(', ')}"
-          raise ArgumentError, msg unless VALID_CONFIG_STYLES.include?(@config_style)
+          raise ArgumentError, msg
         end
     end
 

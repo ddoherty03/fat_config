@@ -4,6 +4,16 @@ class Hash
   # translate any hyphens to underscores.  This is the form we want to keep
   # config hashes in Labrat.
   def methodize
-    transform_keys { |k| k.to_s.gsub('-', '_').to_sym }
+    new_hash = {}
+    each_pair do |k, v|
+      new_val =
+        if v.is_a?(Hash)
+          v.methodize
+        else
+          v
+        end
+      new_hash[k.to_s.gsub('-', '_').to_sym] = new_val
+    end
+    new_hash
   end
 end

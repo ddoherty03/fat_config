@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
+require 'active_support/core_ext/hash'
 require 'fileutils'
 require 'psych'
-require 'active_support/core_ext/hash'
 require 'tomlib'
+require 'inifile'
 
 require_relative "fat_config/version"
 require_relative "hash_ext"
