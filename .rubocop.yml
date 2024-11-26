@@ -1,8 +1,17 @@
+inherit_from: ~/.rubocop.yml
+
+require:
+  - rubocop-factory_bot
+  - rubocop-obsession
+
 AllCops:
-  TargetRubyVersion: 3.0
-
-Style/StringLiterals:
-  EnforcedStyle: double_quotes
-
-Style/StringLiteralsInInterpolation:
-  EnforcedStyle: double_quotes
+  TargetRubyVersion: 3.3
+  Include:
+    - 'lib/**/*'
+    - 'bin/**/*'
+    - 'spec/**/*'
+#    - 'features/**/*'
+  Exclude:
+    - 'spec/tmp/**/*'
+    - '.simplecov'
+    - 'features/**/*'
