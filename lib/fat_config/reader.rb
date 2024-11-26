@@ -14,7 +14,7 @@ module FatConfig
     # - ~permitted_classes~ :: Psych parameter for classes that can be
     #   deserialized into Ruby class instances,
 
-    attr_reader :app_name, :config_style, :root_prefix, :xdg, :permitted_classes
+    attr_reader :app_name, :config_style, :root_prefix, :xdg, :file_merger, :permitted_classes
 
     VALID_CONFIG_STYLES = [:yaml, :toml, :json, :ini]
 
@@ -46,13 +46,21 @@ module FatConfig
       msg = "reader app name may only contain letters, numbers, and underscores"
       raise ArgumentError, msg unless @app_name.match(/\A[a-z][a-z0-9_]*\z/)
 
-      @config_style = config_style.downcase.to_sym
-      msg = "config style must be one of #{VALID_CONFIG_STYLES.join(', ')}"
-      raise ArgumentError, msg unless VALID_CONFIG_STYLES.include?(@config_style)
-
       @root_prefix = root_prefix
       @xdg = xdg
       @permitted_classes = permitted_classes || []
+
+      @config_style = config_style.downcase.to_sym
+      @file_merger =
+        case @config_style
+        when :yaml
+          YAMLMerger.new
+        when :toml
+          TOMLMerger.new
+        else
+          msg = "config style must be one of #{VALID_CONFIG_STYLES.join(', ')}"
+          raise ArgumentError, msg unless VALID_CONFIG_STYLES.include?(@config_style)
+        end
     end
 
     # Return a Hash of the YAML-ized config files for app_name directories.
@@ -79,7 +87,7 @@ module FatConfig
       paths = config_paths
       sys_configs = paths[:system]
       usr_configs = paths[:user]
-      merge_configs_from((sys_configs + usr_configs).compact, verbose: verbose)
+      file_merger.merge_files((sys_configs + usr_configs).compact, verbose: verbose)
     end
 
     def config_paths
@@ -113,35 +121,7 @@ module FatConfig
       { system: sys_configs.compact, user: usr_configs.compact }
     end
 
-    # Merge the settings from the given Array of config files in order from
-    # lowest priority to highest priority, starting with an empty hash.  Any
-    # values of the top-level hash that are themselves Hashes are merged
-    # recursively.
-    def merge_configs_from(files = [], verbose: false)
-      hash = {}
-      files.each do |f|
-        next unless File.readable?(f)
-
-        yml_hash =
-          if permitted_classes
-            Psych.safe_load(File.read(f), permitted_classes:)
-          else
-            Psych.safe_load(File.read(f))
-          end
-        next unless yml_hash
-
-        if yml_hash.is_a?(Hash)
-          yml_hash = yml_hash.methodize
-        else
-          raise "Error loading file #{f}:\n#{File.read(f)[0..500]}"
-        end
-        yml_hash.report("Merging config from file '#{f}") if verbose
-        hash.deep_merge!(yml_hash)
-      end
-      hash
-    end
-
-    ########################################################################
+   ########################################################################
     # XDG config files
     ########################################################################
 
