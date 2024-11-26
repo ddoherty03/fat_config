@@ -139,7 +139,6 @@ module FatConfig
     # XDG_CONFIG_HOME (or ~/.config by default).  Prefix the search location
     # with dir_prefix if given.
     def find_xdg_user_config_file
-      base ||= (base&.strip || app_name)
       xdg_search_dir = ENV['XDG_CONFIG_HOME'] || ['~/.config']
       dir = File.expand_path(File.join(xdg_search_dir, app_name))
       dir = File.join(root_prefix, dir) unless root_prefix.strip.empty?
@@ -196,7 +195,7 @@ module FatConfig
       elsif Dir.exist?(config_dir = File.join(root_prefix, File.expand_path('~/')))
         base_candidates = merger.dotted_base_names(app_name)
         base_fname = base_candidates.find { |b| File.readable?(File.join(config_dir, b)) }
-        config_fname = File.join(config_dir, base_fname)  if base_fname
+        config_fname = File.join(config_dir, base_fname) if base_fname
       end
       config_fname
     end

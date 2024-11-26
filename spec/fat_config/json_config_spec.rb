@@ -4,7 +4,7 @@ require 'spec_helper'
 
 module FatConfig
   RSpec.describe FatConfig do
-    context "JSON Config Files" do
+    context "with JSON Config Files" do
       # Put files here to test file-system dependent specs.
       let(:sandbox_dir) { File.join(__dir__, 'support/sandbox') }
 
@@ -17,13 +17,13 @@ module FatConfig
         File.write(test_path, content)
       end
 
-      before :each do
+      before do
         # Save these, since they're not specific to this app.
         @xdg_config_dirs = ENV['XDG_CONFIG_DIRS']
         @xdg_config_home = ENV['XDG_CONFIG_HOME']
       end
 
-      after :each do
+      after do
         # Restore
         ENV['XDG_CONFIG_DIRS'] = @xdg_config_dirs
         ENV['XDG_CONFIG_HOME'] = @xdg_config_home
@@ -70,14 +70,14 @@ module FatConfig
 
         it 'reads an xdg system config file' do
           config_json = <<~JSON
-          {
-            "page-width": "33mm",
-            "page-height": "101mm",
-            "delta-x": "-4mm",
-            "delta-y": "1cm",
-            "nl-sep": "%%",
-            "printer": "seiko3"
-          }
+            {
+              "page-width": "33mm",
+              "page-height": "101mm",
+              "delta-x": "-4mm",
+              "delta-y": "1cm",
+              "nl-sep": "%%",
+              "printer": "seiko3"
+            }
           JSON
           setup_test_file('/etc/xdg/labrat/config.json', config_json)
 
@@ -93,28 +93,28 @@ module FatConfig
         it 'reads an XDG_CONFIG_DIRS xdg system directory config file' do
           # Higher priority XDG
           config_json = <<~JSON
-          {
-            "page-width": "33mm",
-            "page-height": "101mm",
-            "delta-x": "-4mm",
-            "delta-y": "1cm",
-            "nl-sep": "%%"
-          }
+            {
+              "page-width": "33mm",
+              "page-height": "101mm",
+              "delta-x": "-4mm",
+              "delta-y": "1cm",
+              "nl-sep": "%%"
+            }
           JSON
           setup_test_file('/lib/junk/labrat/config.json', config_json)
 
           # Lower priority XDG
           config2_json = <<~JSON
-          {
-            "page-width": "3cm",
-            "page-height": "10cm",
-            "delta-x": "-4pt",
-            "delta-y": "1cm",
-            "nl-sep": "%%",
-            "printer": "dymo4",
-            "rows": 10,
-            "columns": 3
-          }
+            {
+              "page-width": "3cm",
+              "page-height": "10cm",
+              "delta-x": "-4pt",
+              "delta-y": "1cm",
+              "nl-sep": "%%",
+              "printer": "dymo4",
+              "rows": 10,
+              "columns": 3
+            }
           JSON
           setup_test_file('/lib/lowjunk/labrat/config.json', config2_json)
 
@@ -135,14 +135,14 @@ module FatConfig
 
         it 'reads an xdg system ENV-specified config file' do
           config_json = <<~JSON
-          {
-            "page-width": "33mm",
-            "page-height": "101mm",
-            "delta-x": "-4mm",
-            "delta-y": "1cm",
-            "nl-sep": "%%",
-            "printer": "seiko3"
-          }
+            {
+              "page-width": "33mm",
+              "page-height": "101mm",
+              "delta-x": "-4mm",
+              "delta-y": "1cm",
+              "nl-sep": "%%",
+              "printer": "seiko3"
+            }
           JSON
           ENV['LABRAT_SYS_CONFIG'] = '/etc/labrat.yml'
           setup_test_file(ENV['LABRAT_SYS_CONFIG'], config_json)
@@ -158,14 +158,14 @@ module FatConfig
 
         it 'reads an xdg user config file' do
           config_json = <<~JSON
-          {
-            "page-width": "33mm",
-            "page-height": "101mm",
-            "delta-x": "-4mm",
-            "delta-y": "1cm",
-            "nl-sep": "%%",
-            "printer": "seiko3"
-          }
+            {
+              "page-width": "33mm",
+              "page-height": "101mm",
+              "delta-x": "-4mm",
+              "delta-y": "1cm",
+              "nl-sep": "%%",
+              "printer": "seiko3"
+            }
           JSON
           setup_test_file("/home/#{ENV['USER']}/.config/labrat/config.json", config_json)
           hsh = reader.read
@@ -179,14 +179,14 @@ module FatConfig
 
         it 'reads an xdg ENV-specified user config file' do
           config_json = <<~JSON
-          {
-            "page-width": "33mm",
-            "page-height": "101mm",
-            "delta-x": "-4mm",
-            "delta-y": "1cm",
-            "nl-sep": "%%",
-            "printer": "seiko3"
-          }
+            {
+              "page-width": "33mm",
+              "page-height": "101mm",
+              "delta-x": "-4mm",
+              "delta-y": "1cm",
+              "nl-sep": "%%",
+              "printer": "seiko3"
+            }
           JSON
           ENV['LABRAT_CONFIG'] = "/home/#{ENV['USER']}/.labrc"
           setup_test_file(ENV['LABRAT_CONFIG'], config_json)
@@ -202,21 +202,21 @@ module FatConfig
 
         it 'merges an xdg user config into an xdg system config file' do
           sys_config_json = <<~JSON
-          {
-            "page-width": "33mm",
-            "page-height": "101mm",
-            "delta-x": "-4mm",
-            "delta-y": "1cm",
-            "nl-sep": "%%",
-            "printer": "seiko3"
-          }
+            {
+              "page-width": "33mm",
+              "page-height": "101mm",
+              "delta-x": "-4mm",
+              "delta-y": "1cm",
+              "nl-sep": "%%",
+              "printer": "seiko3"
+            }
           JSON
           setup_test_file('/etc/xdg/labrat/config.json', sys_config_json)
           usr_config_json = <<~JSON
-          {
-            "page-height": "102mm",
-            "delta-x": "-3mm"
-          }
+            {
+              "page-height": "102mm",
+              "delta-x": "-3mm"
+            }
           JSON
           setup_test_file("/home/#{ENV['USER']}/.config/labrat/config.json", usr_config_json)
 
@@ -231,13 +231,13 @@ module FatConfig
 
         it 'reads an XDG_CONFIG_HOME xdg user directory config file' do
           config_json = <<~JSON
-          {
-            "page-width": "33mm",
-            "page-height": "101mm",
-            "delta-x": "-4mm",
-            "delta-y": "1cm",
-            "nl-sep": "%%"
-          }
+            {
+              "page-width": "33mm",
+              "page-height": "101mm",
+              "delta-x": "-4mm",
+              "delta-y": "1cm",
+              "nl-sep": "%%"
+            }
           JSON
           setup_test_file('~/.foncig/labrat/config.json', config_json)
 
@@ -276,14 +276,14 @@ module FatConfig
 
         it 'reads a classic system config file' do
           config_json = <<~JSON
-          {
-            "page-width": "33mm",
-            "page-height": "101mm",
-            "delta-x": "-4mm",
-            "delta-y": "1cm",
-            "nl-sep": "%%",
-            "printer": "seiko3"
-          }
+            {
+              "page-width": "33mm",
+              "page-height": "101mm",
+              "delta-x": "-4mm",
+              "delta-y": "1cm",
+              "nl-sep": "%%",
+              "printer": "seiko3"
+            }
           JSON
           ENV['LABRAT_SYS_CONFIG'] = '/etc/labrat/configjson'
           setup_test_file(ENV['LABRAT_SYS_CONFIG'], config_json)
@@ -299,14 +299,14 @@ module FatConfig
 
         it 'reads a classic user config file' do
           config_json = <<~JSON
-          {
-            "page-width": "33mm",
-            "page-height": "101mm",
-            "delta-x": "-4mm",
-            "delta-y": "1cm",
-            "nl-sep": "%%",
-            "printer": "seiko3"
-          }
+            {
+              "page-width": "33mm",
+              "page-height": "101mm",
+              "delta-x": "-4mm",
+              "delta-y": "1cm",
+              "nl-sep": "%%",
+              "printer": "seiko3"
+            }
           JSON
           setup_test_file("/home/#{ENV['USER']}/.labrat.json", config_json)
           hsh = reader.read
@@ -320,14 +320,14 @@ module FatConfig
 
         it 'reads a classic user config file in ENV[\'LABRAT_CONFIG\']' do
           config_json = <<~JSON
-          {
-            "page-width": "33mm",
-            "page-height": "101mm",
-            "delta-x": "-4mm",
-            "delta-y": "1cm",
-            "nl-sep": "%%",
-            "printer": "seiko3"
-          }
+            {
+              "page-width": "33mm",
+              "page-height": "101mm",
+              "delta-x": "-4mm",
+              "delta-y": "1cm",
+              "nl-sep": "%%",
+              "printer": "seiko3"
+            }
           JSON
           ENV['LABRAT_CONFIG'] = '~/junk/random/lr.y'
           setup_test_file(ENV['LABRAT_CONFIG'], config_json)
@@ -342,14 +342,14 @@ module FatConfig
 
         it "reads a classic user rc-style config file in HOME" do
           config_json = <<~JSON
-          {
-            "page-width": "33mm",
-            "page-height": "101mm",
-            "delta-x": "-4mm",
-            "delta-y": "1cm",
-            "nl-sep": "%%",
-            "printer": "seiko3"
-          }
+            {
+              "page-width": "33mm",
+              "page-height": "101mm",
+              "delta-x": "-4mm",
+              "delta-y": "1cm",
+              "nl-sep": "%%",
+              "printer": "seiko3"
+            }
           JSON
           setup_test_file('~/.labratrc', config_json)
           hsh = reader.read
@@ -363,14 +363,14 @@ module FatConfig
 
         it 'reads a classic ~/.labrat config dir in HOME' do
           config_json = <<~JSON
-          {
-            "page-width": "33mm",
-            "page-height": "101mm",
-            "delta-x": "-4mm",
-            "delta-y": "1cm",
-            "nl-sep": "%%",
-            "printer": "seiko3"
-          }
+            {
+              "page-width": "33mm",
+              "page-height": "101mm",
+              "delta-x": "-4mm",
+              "delta-y": "1cm",
+              "nl-sep": "%%",
+              "printer": "seiko3"
+            }
           JSON
           setup_test_file('~/.labrat/config', config_json)
           hsh = reader.read
@@ -384,24 +384,24 @@ module FatConfig
 
         it 'reads a classic system and user config files' do
           sys_config_json = <<~JSON
-          {
-            "page-width": "33mm",
-            "page-height": "101mm",
-            "delta-x": "-4mm",
-            "delta-y": "1cm",
-            "nl-sep": "%%",
-            "printer": "seiko3"
-          }
+            {
+              "page-width": "33mm",
+              "page-height": "101mm",
+              "delta-x": "-4mm",
+              "delta-y": "1cm",
+              "nl-sep": "%%",
+              "printer": "seiko3"
+            }
           JSON
           ENV['LABRAT_SYS_CONFIG'] = '/etc/labrat/config.json'
           setup_test_file(ENV['LABRAT_SYS_CONFIG'], sys_config_json)
           usr_config_json = <<~JSON
-          {
-            "page-height": "102mm",
-            "delta-x": "-7mm",
-            "delta-y": "+30mm",
-            "nl-sep": "~~"
-          }
+            {
+              "page-height": "102mm",
+              "delta-x": "-7mm",
+              "delta-y": "+30mm",
+              "nl-sep": "~~"
+            }
           JSON
           setup_test_file('~/.labrat/config.json', usr_config_json)
 

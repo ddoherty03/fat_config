@@ -4,7 +4,7 @@ require 'spec_helper'
 
 module FatConfig
   RSpec.describe FatConfig do
-    context "YAML Config Files" do
+    context "with YAML Config Files" do
       # Put files here to test file-system dependent specs.
       let(:sandbox_dir) { File.join(__dir__, 'support/sandbox') }
 
@@ -17,13 +17,13 @@ module FatConfig
         File.write(test_path, content)
       end
 
-      before :each do
+      before do
         # Save these, since they're not specific to this app.
         @xdg_config_dirs = ENV['XDG_CONFIG_DIRS']
         @xdg_config_home = ENV['XDG_CONFIG_HOME']
       end
 
-      after :each do
+      after do
         # Restore
         ENV['XDG_CONFIG_DIRS'] = @xdg_config_dirs
         ENV['XDG_CONFIG_HOME'] = @xdg_config_home
@@ -37,25 +37,25 @@ module FatConfig
         let(:reader) { Reader.new('labrat') }
         let(:yaml_str) do
           <<~YAML
-          ---
-          doe: "a deer, a female deer"
-          ray: "a drop of golden sun"
-          pi: 3.14159
-          xmas: true
-          french-hens: 3
-          calling-birds:
-            - huey
-            - dewey
-            - louie
-            - fred
-          xmas-fifth-day: 2024-12-24
-          french-hens: 3
-          golden-rings: 5
-          partridges:
-            count: 1
-            location: "a pear tree"
-          turtle-doves: two
-        YAML
+            ---
+            doe: "a deer, a female deer"
+            ray: "a drop of golden sun"
+            pi: 3.14159
+            xmas: true
+            french-hens: 3
+            calling-birds:
+              - huey
+              - dewey
+              - louie
+              - fred
+            xmas-fifth-day: 2024-12-24
+            french-hens: 3
+            golden-rings: 5
+            partridges:
+              count: 1
+              location: "a pear tree"
+            turtle-doves: two
+          YAML
         end
 
         it 'can read a yaml string' do
@@ -73,13 +73,13 @@ module FatConfig
 
         it 'reads an xdg system config file' do
           config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
+            page-width: 33mm
+            page-height: 101mm
+            delta-x: -4mm
+            delta-y: 1cm
+            nl-sep: '%%'
+            printer: seiko3
+          YAML
           setup_test_file('/etc/xdg/labrat/config.yml', config_yml)
 
           hsh = reader.read
@@ -94,23 +94,23 @@ module FatConfig
         it 'reads an XDG_CONFIG_DIRS xdg system directory config file' do
           # Higher priority XDG
           config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl_sep: '%%'
-        YAML
+            page-width: 33mm
+            page-height: 101mm
+            delta-x: -4mm
+            delta-y: 1cm
+            nl_sep: '%%'
+          YAML
           setup_test_file('/lib/junk/labrat/config.yml', config_yml)
 
           # Lower priority XDG
           config2_yml = <<~YAML
-          page-width: 3cm
-          page-height: 10cm
-          delta-x: -4pt
-          printer: dymo4
-          rows: 10
-          columns: 3
-        YAML
+            page-width: 3cm
+            page-height: 10cm
+            delta-x: -4pt
+            printer: dymo4
+            rows: 10
+            columns: 3
+          YAML
           setup_test_file('/lib/lowjunk/labrat/config.yml', config2_yml)
 
           # The first directory in the ENV variable list should take precedence.
@@ -130,13 +130,13 @@ module FatConfig
 
         it 'reads an xdg system ENV-specified config file' do
           config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
+            page-width: 33mm
+            page-height: 101mm
+            delta-x: -4mm
+            delta-y: 1cm
+            nl-sep: '%%'
+            printer: seiko3
+          YAML
           ENV['LABRAT_SYS_CONFIG'] = '/etc/labrat.yml'
           setup_test_file(ENV['LABRAT_SYS_CONFIG'], config_yml)
           hsh = reader.read
@@ -151,13 +151,13 @@ module FatConfig
 
         it 'reads an xdg user config file' do
           config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
+            page-width: 33mm
+            page-height: 101mm
+            delta-x: -4mm
+            delta-y: 1cm
+            nl-sep: '%%'
+            printer: seiko3
+          YAML
           setup_test_file("/home/#{ENV['USER']}/.config/labrat/config.yml", config_yml)
           hsh = reader.read
           expect(hsh[:page_width]).to eq('33mm')
@@ -170,13 +170,13 @@ module FatConfig
 
         it 'reads an xdg ENV-specified user config file' do
           config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
+            page-width: 33mm
+            page-height: 101mm
+            delta-x: -4mm
+            delta-y: 1cm
+            nl-sep: '%%'
+            printer: seiko3
+          YAML
           ENV['LABRAT_CONFIG'] = "/home/#{ENV['USER']}/.labrc"
           setup_test_file(ENV['LABRAT_CONFIG'], config_yml)
 
@@ -191,18 +191,18 @@ module FatConfig
 
         it 'merges an xdg user config into an xdg system config file' do
           sys_config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
+            page-width: 33mm
+            page-height: 101mm
+            delta-x: -4mm
+            delta-y: 1cm
+            nl-sep: '%%'
+            printer: seiko3
+          YAML
           setup_test_file('/etc/xdg/labrat/config.yml', sys_config_yml)
           usr_config_yml = <<~YAML
-          page-height: 102mm
-          delta-x: -3mm
-        YAML
+            page-height: 102mm
+            delta-x: -3mm
+          YAML
           setup_test_file("/home/#{ENV['USER']}/.config/labrat/config.yml", usr_config_yml)
 
           hsh = reader.read
@@ -216,12 +216,12 @@ module FatConfig
 
         it 'reads an XDG_CONFIG_HOME xdg user directory config file' do
           config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-        YAML
+            page-width: 33mm
+            page-height: 101mm
+            delta-x: -4mm
+            delta-y: 1cm
+            nl-sep: '%%'
+          YAML
           setup_test_file('~/.foncig/labrat/config.yml', config_yml)
 
           # The first directory in the ENV variable list should take precedence.
@@ -259,13 +259,13 @@ module FatConfig
 
         it 'reads a classic system config file' do
           config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
+            page-width: 33mm
+            page-height: 101mm
+            delta-x: -4mm
+            delta-y: 1cm
+            nl-sep: '%%'
+            printer: seiko3
+          YAML
           ENV['LABRAT_SYS_CONFIG'] = '/etc/labrat/config.yaml'
           setup_test_file(ENV['LABRAT_SYS_CONFIG'], config_yml)
 
@@ -280,13 +280,13 @@ module FatConfig
 
         it 'reads a classic user config file' do
           config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
+            page-width: 33mm
+            page-height: 101mm
+            delta-x: -4mm
+            delta-y: 1cm
+            nl-sep: '%%'
+            printer: seiko3
+          YAML
           setup_test_file("/home/#{ENV['USER']}/.labrat.yml", config_yml)
           hsh = reader.read
           expect(hsh[:page_width]).to eq('33mm')
@@ -299,13 +299,13 @@ module FatConfig
 
         it 'reads a classic user config file in ENV[\'LABRAT_CONFIG\']' do
           config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
+            page-width: 33mm
+            page-height: 101mm
+            delta-x: -4mm
+            delta-y: 1cm
+            nl-sep: '%%'
+            printer: seiko3
+          YAML
           ENV['LABRAT_CONFIG'] = '~/junk/random/lr.y'
           setup_test_file(ENV['LABRAT_CONFIG'], config_yml)
           hsh = reader.read
@@ -319,13 +319,13 @@ module FatConfig
 
         it "reads a classic user rc-style config file in HOME" do
           config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
+            page-width: 33mm
+            page-height: 101mm
+            delta-x: -4mm
+            delta-y: 1cm
+            nl-sep: '%%'
+            printer: seiko3
+          YAML
           setup_test_file('~/.labratrc', config_yml)
           hsh = reader.read
           expect(hsh[:page_width]).to eq('33mm')
@@ -338,13 +338,13 @@ module FatConfig
 
         it 'reads a classic ~/.labrat config dir in HOME' do
           config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
+            page-width: 33mm
+            page-height: 101mm
+            delta-x: -4mm
+            delta-y: 1cm
+            nl-sep: '%%'
+            printer: seiko3
+          YAML
           setup_test_file('~/.labrat/config', config_yml)
           hsh = reader.read
           expect(hsh[:page_width]).to eq('33mm')
@@ -357,21 +357,21 @@ module FatConfig
 
         it 'reads a classic system and user config files' do
           sys_config_yml = <<~YAML
-          page-width: 33mm
-          page-height: 101mm
-          delta-x: -4mm
-          delta-y: 1cm
-          nl-sep: '%%'
-          printer: seiko3
-        YAML
+            page-width: 33mm
+            page-height: 101mm
+            delta-x: -4mm
+            delta-y: 1cm
+            nl-sep: '%%'
+            printer: seiko3
+          YAML
           ENV['LABRAT_SYS_CONFIG'] = '/etc/labrat/config.yaml'
           setup_test_file(ENV['LABRAT_SYS_CONFIG'], sys_config_yml)
           usr_config_yml = <<~YAML
-          page-height: 102mm
-          delta-x: -7mm
-          delta-y: +30mm
-          nl-sep: '~~'
-        YAML
+            page-height: 102mm
+            delta-x: -7mm
+            delta-y: +30mm
+            nl-sep: '~~'
+          YAML
           setup_test_file('~/.labrat/config.yml', usr_config_yml)
 
           hsh = reader.read

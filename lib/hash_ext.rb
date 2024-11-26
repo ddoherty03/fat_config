@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 class Hash
   # Transform hash keys to symbols suitable for calling as methods, i.e.,
   # translate any hyphens to underscores.  This is the form we want to keep
@@ -12,7 +13,7 @@ class Hash
         else
           v
         end
-      new_hash[k.to_s.gsub('-', '_').to_sym] = new_val
+      new_hash[k.to_s.tr('-', '_').to_sym] = new_val
     end
     new_hash
   end
