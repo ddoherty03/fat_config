@@ -5,6 +5,8 @@ module FatConfig
   # returning a Hash to reflect the configuration.  We use YAML as the
   # configuration format and look for the config file in the standard places.
   class Reader
+    VALID_CONFIG_STYLES = [:yaml, :toml, :json, :ini]
+
     # - ~app_name~ :: used to form environment variables for config locations.
     # - ~config_lang~ :: either :yaml or :toml or :json or :ini
     # - ~root_prefix~ :: an alternate root of the assumed file system, by
@@ -13,45 +15,21 @@ module FatConfig
     #   false, use "classic" UNIX config practices with /etc/ and ~/.baserc.
     # - ~permitted_classes~ :: Psych parameter for classes that can be
     #   deserialized into Ruby class instances,
+    attr_reader :app_name, :config_style, :root_prefix, :xdg, :merger, :permitted_classes
 
-    attr_reader :app_name, :config_style, :root_prefix, :xdg, :file_merger, :permitted_classes
-
-    VALID_CONFIG_STYLES = [:yaml, :toml, :json, :ini]
-
-    # NOTE: from the Psych documentation, some types are 'deserialized',
-    # meaning they are converted to Ruby objects.  For example, a value of
-    # '10' for a property will be converted to the integer 10.
-    #
-    # Safely load the yaml string in yaml.  By default, only the
-    # following classes are allowed to be deserialized:
-    #
-    # - TrueClass
-    # - FalseClass
-    # - NilClass
-    # - Integer
-    # - Float
-    # - String
-    # - Array
-    # - Hash
-    #
-    # Recursive data structures are not allowed by default.  Arbitrary classes
-    # can be allowed by adding those classes to the permitted_classes
-    # keyword argument.  They are additive.  For example, to allow Date
-    # deserialization:
-    #
-    # Config.read passes anything in the ~permitted_classes~ parameter onto Psych.safe_load.
     def initialize(app_name, config_style: :yaml, root_prefix: '', xdg: true, permitted_classes: nil)
       @app_name = app_name.strip.downcase
       raise ArgumentError, "reader app name may not be blank" if @app_name.blank?
+
       msg = "reader app name may only contain letters, numbers, and underscores"
-      raise ArgumentError, msg unless @app_name.match(/\A[a-z][a-z0-9_]*\z/)
+      raise ArgumentError, msg unless app_name.match?(/\A[a-z][a-z0-9_]*\z/)
 
       @root_prefix = root_prefix
       @xdg = xdg
       @permitted_classes = permitted_classes || []
 
       @config_style = config_style.downcase.to_sym
-      @file_merger =
+      @merger =
         case @config_style
         when :yaml
           YAMLMerger.new
@@ -87,7 +65,7 @@ module FatConfig
       paths = config_paths
       sys_configs = paths[:system]
       usr_configs = paths[:user]
-      file_merger.merge_files((sys_configs + usr_configs).compact, verbose: verbose)
+      merger.merge_files((sys_configs + usr_configs).compact, verbose: verbose)
     end
 
     def config_paths
@@ -121,7 +99,7 @@ module FatConfig
       { system: sys_configs.compact, user: usr_configs.compact }
     end
 
-   ########################################################################
+    ########################################################################
     # XDG config files
     ########################################################################
 
@@ -142,8 +120,7 @@ module FatConfig
       xdg_search_dirs.each do |dir|
         dir = File.expand_path(File.join(dir, app_name))
         dir = File.join(root_prefix, dir) unless root_prefix.nil? || root_prefix.strip.empty?
-        base_candidates = [app_name.to_s, "#{app_name}.yml", "#{app_name}.yaml", "config.yml", "config.yaml",
-                           "#{app_name}.cfg", "#{app_name}.config"]
+        base_candidates = merger.xdg_base_names(app_name)
         config_fname = base_candidates.find { |b| File.readable?(File.join(dir, b)) }
         configs << File.join(dir, config_fname) if config_fname
       end
@@ -164,8 +141,7 @@ module FatConfig
       dir = File.join(root_prefix, dir) unless root_prefix.strip.empty?
       return unless Dir.exist?(dir)
 
-      base_candidates = [app_name.to_s, "#{app_name}.yml", "#{app_name}.yaml", "config.yml", "config.yaml",
-                         "#{app_name}.cfg", "#{app_name}.config"]
+      base_candidates = merger.xdg_base_names(app_name)
       config_fname = base_candidates.find { |b| File.readable?(File.join(dir, b)) }
       if config_fname
         File.join(dir, config_fname)
@@ -192,8 +168,7 @@ module FatConfig
       else
         dir = File.join(root_prefix, "/etc/#{app_name}")
         if Dir.exist?(dir)
-          base_candidates = ["#{app_name}" "#{app_name}.yml", "#{app_name}.yaml",
-                             "#{app_name}.cfg", "#{app_name}.config"]
+          base_candidates = merger.classic_base_names(app_name)
           config = base_candidates.find { |b| File.readable?(File.join(dir, b)) }
           configs = [File.join(dir, config)] if config
         end
@@ -211,12 +186,11 @@ module FatConfig
       if env_config && File.readable?((config = File.join(root_prefix, File.expand_path(env_config))))
         config_fname = config
       elsif Dir.exist?(config_dir = File.join(root_prefix, File.expand_path("~/.#{app_name}")))
-        base_candidates = ["config.yml", "config.yaml", "config"]
+        base_candidates = merger.classic_base_names(app_name)
         base_fname = base_candidates.find { |b| File.readable?(File.join(config_dir, b)) }
         config_fname = File.join(config_dir, base_fname)
       elsif Dir.exist?(config_dir = File.join(root_prefix, File.expand_path('~/')))
-        base_candidates = [".#{app_name}", ".#{app_name}rc", ".#{app_name}.yml", ".#{app_name}.yaml",
-                           ".#{app_name}.cfg", ".#{app_name}.config"]
+        base_candidates = merger.dotted_base_names(app_name)
         base_fname = base_candidates.find { |b| File.readable?(File.join(config_dir, b)) }
         config_fname = File.join(config_dir, base_fname)
       end
