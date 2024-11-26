@@ -1,4 +1,4 @@
-^module FatConfig
+module FatConfig
   class YAMLMerger
     def merge_files(files = [], verbose: false, permitted_classes: [])
       hash = {}
