@@ -211,6 +211,61 @@ module FatConfig
           expect(hsh[:printer]).to eq('seiko3')
         end
 
+        it 'vebosely merges an xdg user config into an xdg system config file' do
+          sys_config_tml = <<~TOML
+            page-width = "33mm"
+            page-height = "101mm"
+            delta-x = "-4mm"
+            delta-y = "1cm"
+            nl-sep = '%%'
+            printer = "seiko3"
+          TOML
+          setup_test_file('/etc/xdg/labrat/config.toml', sys_config_tml)
+          usr_config_tml = <<~TOML
+            page-height = "102mm"
+            delta-x = "-3mm"
+          TOML
+          setup_test_file("/home/#{ENV['USER']}/.config/labrat/config.toml", usr_config_tml)
+
+          # With verbose true, stderr should be the following:
+          #
+          # System config files found: /home/ded/src/fat_config/spec/fat_config/support/sandbox/etc/xdg/labrat/config.toml
+          # User config files found: /home/ded/src/fat_config/spec/fat_config/support/sandbox/etc/xdg/labrat/config.toml
+          # Merging system config from file '/home/ded/src/fat_config/spec/fat_config/support/sandbox/etc/xdg/labrat/config.toml':
+          #   Added: delta_x: -4mm
+          #   Added: delta_y: 1cm
+          #   Added: nl_sep: %%
+          #   Added: page_height: 101mm
+          #   Added: page_width: 33mm
+          #   Added: printer: seiko3
+          # Merging user config from file '/home/ded/src/fat_config/spec/fat_config/support/sandbox/home/ded/.config/labrat/config.toml':
+          #   Changed: delta_x: -4mm -> -3mm
+          #   Unchanged: delta_y: 1cm
+          #   Unchanged: nl_sep: %%
+          #   Changed: page_height: 101mm -> 102mm
+          #   Unchanged: page_width: 33mm
+          #   Unchanged: printer: seiko3
+          #
+          hsh = {}
+          result = capture { hsh = reader.read(verbose: true) }
+          expect(result[:stderr]).to match(%r{/etc/xdg/labrat/config.toml})
+          expect(result[:stderr]).to match(%r{/\.config/labrat/config.toml})
+          expect(result[:stderr]).to match(%r{Merging system config})
+          expect(result[:stderr]).to match(%r{Merging user config})
+          expect(result[:stderr]).to match(%r{Added: *delta_x})
+          expect(result[:stderr]).to match(%r{Added: *delta_y})
+          expect(result[:stderr]).to match(%r{Changed: *delta_x})
+          expect(result[:stderr]).to match(%r{Unchanged: *delta_y})
+          expect(result[:stderr]).to match(%r{Changed: *page_height})
+
+          expect(hsh[:page_width]).to eq('33mm')
+          expect(hsh[:page_height]).to eq('102mm')
+          expect(hsh[:delta_x]).to eq('-3mm')
+          expect(hsh[:delta_y]).to eq('1cm')
+          expect(hsh[:nl_sep]).to eq('%%')
+          expect(hsh[:printer]).to eq('seiko3')
+        end
+
         it 'reads an XDG_CONFIG_HOME xdg user directory config file' do
           config_tml = <<~TOML
             page-width = "33mm"

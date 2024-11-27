@@ -1,7 +1,8 @@
 module FatConfig
   class JSONMerger
-    def merge_files(files = [], verbose: false, permitted_classes: [])
+    def merge_files(sys_files = [], usr_files = [], verbose: false, permitted_classes: [])
       hash = {}
+      files = (sys_files + usr_files).compact
       files.each do |f|
         next unless File.readable?(f)
 
@@ -13,7 +14,11 @@ module FatConfig
         else
           raise "Error loading file #{f}:\n#{File.read(f)[0..500]}"
         end
-        json_hash.report("Merging config from file '#{f}") if verbose
+        if verbose
+          warn "Merging system config from file '#{f}':" if sys_files.include?(f)
+          warn "Merging user config from file '#{f}':" if usr_files.include?(f)
+          hash.report_merge(json_hash)
+        end
         hash.deep_merge!(json_hash)
       end
       hash

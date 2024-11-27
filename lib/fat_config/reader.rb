@@ -69,7 +69,19 @@ module FatConfig
       paths = config_paths
       sys_configs = paths[:system]
       usr_configs = paths[:user]
-      merger.merge_files((sys_configs + usr_configs).compact, verbose: verbose)
+      if verbose
+        if sys_configs.empty?
+          warn "No system config files found."
+        else
+          warn "System config files found: #{sys_configs.join('; ')}"
+        end
+        if usr_configs.empty?
+          warn "No user config files found."
+        else
+          warn "User config files found: #{sys_configs.join('; ')}"
+        end
+      end
+      merger.merge_files(sys_configs, usr_configs, verbose: verbose)
     end
 
     def config_paths

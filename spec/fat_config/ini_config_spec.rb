@@ -212,6 +212,62 @@ module FatConfig
           expect(hsh[:global][:printer]).to eq('seiko3')
         end
 
+        it 'verbosely merges an xdg user config into an xdg system config file' do
+          sys_config_ini = <<~INI
+            page-width = "33mm"
+            page-height = "101mm"
+            delta-x = "-4mm"
+            delta-y = "1cm"
+            nl-sep = "%%"
+            printer = "seiko3"
+          INI
+          setup_test_file('/etc/xdg/labrat/config.ini', sys_config_ini)
+          usr_config_ini = <<~INI
+            page-height = "102mm"
+            delta-x = "-3mm"
+          INI
+          setup_test_file("/home/#{ENV['USER']}/.config/labrat/config.ini", usr_config_ini)
+
+          hsh = {}
+          # With verbose true, stderr should be the following:
+          #
+          # System config files found: /home/ded/src/fat_config/spec/fat_config/support/sandbox/etc/xdg/labrat/config.yml
+          # User config files found: /home/ded/src/fat_config/spec/fat_config/support/sandbox/etc/xdg/labrat/config.yml
+          # Merging system config from file '/home/ded/src/fat_config/spec/fat_config/support/sandbox/etc/xdg/labrat/config.yml':
+          #   Added: delta_x: -4mm
+          #   Added: delta_x: -4mm
+          #   Added: delta_y: 1cm
+          #   Added: nl_sep: %%
+          #   Added: page_height: 101mm
+          #   Added: page_width: 33mm
+          #   Added: printer: seiko3
+          # Merging user config from file '/home/ded/src/fat_config/spec/fat_config/support/sandbox/home/ded/.config/labrat/config.yml':
+          #   Changed: delta_x: -4mm -> -3mm
+          #   Unchanged: delta_y: 1cm
+          #   Unchanged: nl_sep: %%
+          #   Changed: page_height: 101mm -> 102mm
+          #   Unchanged: page_width: 33mm
+          #   Unchanged: printer: seiko3
+          hsh = {}
+          result = capture { hsh = reader.read(verbose: true) }
+          expect(result[:stderr]).to match(%r{Config key: global})
+          expect(result[:stderr]).to match(%r{/etc/xdg/labrat/config.ini})
+          expect(result[:stderr]).to match(%r{/\.config/labrat/config.ini})
+          expect(result[:stderr]).to match(%r{Merging system config})
+          expect(result[:stderr]).to match(%r{Merging user config})
+          expect(result[:stderr]).to match(%r{Added: *delta_x})
+          expect(result[:stderr]).to match(%r{Added: *delta_y})
+          expect(result[:stderr]).to match(%r{Changed: *delta_x})
+          expect(result[:stderr]).to match(%r{Unchanged: *delta_y})
+          expect(result[:stderr]).to match(%r{Changed: *page_height})
+          expect(hsh[:global][:page_width]).to eq('33mm')
+          expect(hsh[:global][:page_height]).to eq('102mm')
+          expect(hsh[:global][:delta_x]).to eq('-3mm')
+          expect(hsh[:global][:delta_y]).to eq('1cm')
+          expect(hsh[:global][:nl_sep]).to eq("%%")
+          expect(hsh[:global][:printer]).to eq('seiko3')
+        end
+
         it 'reads an XDG_CONFIG_HOME xdg user directory config file' do
           config_ini = <<~INI
             page-width = "33mm"
