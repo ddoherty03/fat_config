@@ -4,7 +4,27 @@ require "fat_config"
 require "debug"
 require "pry"
 
+require 'pp'
+
+module Helper
+  def capture(&block)
+    begin
+      $stdout = StringIO.new
+      $stderr = StringIO.new
+      yield
+      result = {}
+      result[:stdout] = $stdout.string
+      result[:stderr] = $stderr.string
+    ensure
+      $stdout = STDOUT
+      $stderr = STDERR
+    end
+    result
+  end
+end
+
 RSpec.configure do |config|
+  config.include Helper
   # Enable flags like --only-failures and --next-failure
   config.example_status_persistence_file_path = ".rspec_status"
 
