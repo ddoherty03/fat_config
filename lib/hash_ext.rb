@@ -17,4 +17,34 @@ class Hash
     end
     new_hash
   end
+
+  def report_merge(new_hash, indent: 2)
+    new_keys = new_hash.keys
+    old_keys = keys
+    unchanged_keys = old_keys - new_keys
+    added_keys = new_keys - old_keys
+    changed_keys = old_keys & new_keys
+    space = ' ' * indent
+    (keys + added_keys).sort.each do |k|
+      if (self[k].nil? || self[k].is_a?(Hash)) && new_hash[k].is_a?(Hash)
+        warn "#{space}Config key: #{k}:"
+        (self[k] || {}).report_merge(new_hash[k], indent: indent + 2)
+        next
+      end
+      if unchanged_keys.include?(k)
+        warn "#{space}Unchanged: #{k}: #{self[k]}"
+      elsif added_keys.include?(k)
+        warn "#{space}Added:     #{k}: #{new_hash[k]}"
+      elsif changed_keys.include?(k)
+        if self[k] != new_hash[k]
+          warn "#{space}Changed:   #{k}: #{self[k]} -> #{new_hash[k]}"
+        else
+          warn "#{space}Unchanged: #{k}: #{self[k]} -> #{new_hash[k]}"
+        end
+      else
+        raise ArgumentError, "FatConfig report_merge has unmatched key: #{k}"
+      end
+    end
+    self
+  end
 end
