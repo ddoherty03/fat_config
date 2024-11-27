@@ -1,0 +1,6 @@
+* Programming TODOS
+1. Add a parameter to the Reader#read method to merge in command-line
+   parameters and environment variables.
+2. Ensure that the verbose option provides useful feedback on how the options
+   got to be what they end up as.
+3. Write the README.org
