@@ -5,9 +5,6 @@ require 'spec_helper'
 module FatConfig
   RSpec.describe FatConfig do
     context "with INI Config Files" do
-      # Put files here to test file-system dependent specs.
-      let(:sandbox_dir) { File.join(__dir__, 'support/sandbox') }
-
       # Put contents in path relative to SANDBOX
       def setup_test_file(path, content)
         path = File.expand_path(path)

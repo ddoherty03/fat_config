@@ -21,6 +21,20 @@ module Helper
     end
     result
   end
+
+  def sandbox_dir
+    File.join("/tmp", 'fat_config/sandbox')
+  end
+
+  # Put contents in path relative to SANDBOX
+  def setup_test_file(path, content)
+    path = File.expand_path(path)
+    test_path = File.join(sandbox_dir, path)
+    dir_part = File.dirname(test_path)
+    FileUtils.mkdir_p(dir_part) unless Dir.exist?(dir_part)
+    File.write(test_path, content)
+    test_path
+  end
 end
 
 RSpec.configure do |config|

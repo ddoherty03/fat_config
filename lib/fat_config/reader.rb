@@ -53,19 +53,28 @@ module FatConfig
     # those files according to the following priorities, from highest to
     # lowest:
     #
-    # 1. A config file pointed to by the environment variable APPNAME_CONFIG
-    # 2. User classic config files
-    # 3. User xdg config files for app_name,
-    # 4. A config file pointed to by the environment variable APPNAME_SYS_CONFIG
-    # 5. System classic config files,
-    # 6. System xdg config files for for app_name,
+    # 1. Options passed in the String or Hash parameter, command_line
+    # 2. Options passed by an environment variable APPNAME_OPTIONS
+    # 3. If the xdg parameter is true:
+    #    a. Either:
+    #       A. The file pointed to by the environment variable APPNAME_CONFIG or
+    #       B. User xdg config files for app_name,
+    #    b. Then, either:
+    #       A. The file pointed to by the environment variable APPNAME_SYS_CONFIG or
+    #       B. System xdg config files for for app_name,
+    # 4. If the xdg parameter is false:
+    #    a. Either:
+    #       A. The file pointed to by the environment variable APPNAME_CONFIG or
+    #       B. User classic config files
+    #    b. Then, either:
+    #       A. The file pointed to by the environment variable APPNAME_SYS_CONFIG or
+    #       B. System classic config files,
     #
-    # If an environment variable is found, the search for xdg and classic
-    # config files is skipped. Any dir_prefix is pre-pended to search
-    # locations environment, xdg and classic config paths so you can run this
-    # on a temporary directory set up for testing.
+    # Any root_prefix is pre-pended to file-based search locations environment, xdg and
+    # classic config paths so you can run this on a temporary directory set up for
+    # testing.
     #
-    def read(verbose: false)
+    def read(command_line: {}, verbose: false)
       paths = config_paths
       sys_configs = paths[:system]
       usr_configs = paths[:user]
@@ -81,7 +90,43 @@ module FatConfig
           warn "User config files found: #{sys_configs.join('; ')}"
         end
       end
-      merger.merge_files(sys_configs, usr_configs, verbose: verbose)
+      result = merger.merge_files(sys_configs, usr_configs, verbose: verbose)
+      result = merge_environment(result, verbose: verbose)
+      merge_command_line(result, command_line, verbose: verbose)
+    end
+
+    def merge_environment(start_hash, verbose: false)
+      return start_hash if ENV[env_name].blank?
+
+      env_hash = Hash.parse_opts(ENV[env_name])
+      if verbose
+        warn "Merging environment from #{env_name}:"
+        start_hash.report_merge(env_hash)
+      end
+      start_hash.merge(env_hash)
+    end
+
+    def merge_command_line(start_hash, command_line, verbose: false)
+      return start_hash unless command_line
+
+      cl_hash =
+        case command_line
+        when String
+          Hash.parse_opts(command_line)
+        when Hash
+          command_line
+        else
+          raise ArgumentError, "command_line must be a String or Hash"
+        end
+      if verbose
+        warn "Merging command-line:"
+        start_hash.report_merge(cl_hash)
+      end
+      start_hash.merge(cl_hash)
+    end
+
+    def env_name
+      "#{app_name.upcase}_OPTIONS"
     end
 
     def config_paths

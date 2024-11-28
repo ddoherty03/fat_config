@@ -6,17 +6,6 @@ module FatConfig
   RSpec.describe FatConfig do
     context "with YAML Config Files" do
       # Put files here to test file-system dependent specs.
-      let(:sandbox_dir) { File.join(__dir__, 'support/sandbox') }
-
-      # Put contents in path relative to SANDBOX
-      def setup_test_file(path, content)
-        path = File.expand_path(path)
-        test_path = File.join(sandbox_dir, path)
-        dir_part = File.dirname(test_path)
-        FileUtils.mkdir_p(dir_part) unless Dir.exist?(dir_part)
-        File.write(test_path, content)
-      end
-
       before do
         # Save these, since they're not specific to this app.
         @xdg_config_dirs = ENV['XDG_CONFIG_DIRS']
@@ -436,6 +425,96 @@ module FatConfig
           expect(hsh[:delta_y]).to eq('+30mm')
           expect(hsh[:nl_sep]).to eq('~~')
           expect(hsh[:printer]).to eq('seiko3')
+        end
+      end
+
+      describe "All types of config at once, verbosely" do
+        let(:reader) { Reader.new('labrat', root_prefix: sandbox_dir) }
+
+        after do
+          ENV.delete('LABRAT_OPTIONS')
+        end
+
+        it 'verbosely merges an xdg user config into an xdg system config file' do
+          sys_config_yml = <<~YAML
+            page-width: 33mm
+            page-height: 101mm
+            delta-x: -4mm
+            delta-y: 1cm
+            nl-sep: '%%'
+            printer: seiko3
+          YAML
+          setup_test_file('/etc/xdg/labrat/config.yml', sys_config_yml)
+          usr_config_yml = <<~YAML
+            page-height: 102mm
+            delta-x: -3mm
+          YAML
+          setup_test_file("/home/#{ENV['USER']}/.config/labrat/config.yml", usr_config_yml)
+          # With verbose true, stderr should be the following:
+          #
+          # System config files found: /tmp/fat_config/sandbox/etc/xdg/labrat/config.yml
+          # User config files found: /tmp/fat_config/sandbox/etc/xdg/labrat/config.yml
+          # Merging system config from file '/tmp/fat_config/sandbox/etc/xdg/labrat/config.yml':
+          #   Added:     delta_x: -4mm
+          #   Added:     delta_y: 1cm
+          #   Added:     nl_sep: %%
+          #   Added:     page_height: 101mm
+          #   Added:     page_width: 33mm
+          #   Added:     printer: seiko3
+          # Merging user config from file '/tmp/fat_config/sandbox/home/ded/.config/labrat/config.yml':
+          #   Changed:   delta_x: -4mm -> -3mm
+          #   Unchanged: delta_y: 1cm
+          #   Unchanged: nl_sep: %%
+          #   Changed:   page_height: 101mm -> 102mm
+          #   Unchanged: page_width: 33mm
+          #   Unchanged: printer: seiko3
+          # Merging environment from LABRAT_OPTIONS:
+          #   Unchanged: delta_x: -3mm
+          #   Unchanged: delta_y: 1cm
+          #   Added:     flip: false
+          #   Added:     flop: true
+          #   Added:     grid_gap: 4pt
+          #   Unchanged: nl_sep: %%
+          #   Unchanged: page_height: 102mm
+          #   Unchanged: page_width: 33mm
+          #   Changed:   printer: seiko3 -> hp1
+          # Merging command-line:
+          #   Unchanged: delta_x: -3mm
+          #   Unchanged: delta_y: 1cm
+          #   Unchanged: flip: false
+          #   Unchanged: flop: true
+          #   Unchanged: grid_gap: 4pt
+          #   Unchanged: nl_sep: %%
+          #   Unchanged: page_height: 102mm
+          #   Changed:   page_width: 33mm -> 10cm
+          #   Changed:   printer: hp1 -> hp2
+          ENV['LABRAT_OPTIONS'] = "--grid-gap=4pt --printer=hp1 --flop --!flip"
+          command_line = { printer: "hp2", page_width: "10cm" }
+          hsh = {}
+          result = capture { hsh = reader.read(command_line: command_line, verbose: true) }
+          expect(result[:stderr]).to match(%r{/etc/xdg/labrat/config.yml})
+          expect(result[:stderr]).to match(%r{/\.config/labrat/config.yml})
+          expect(result[:stderr]).to match(%r{Merging system config})
+          expect(result[:stderr]).to match(%r{Merging user config})
+          expect(result[:stderr]).to match(%r{Added: *delta_x})
+          expect(result[:stderr]).to match(%r{Added: *delta_y})
+          expect(result[:stderr]).to match(%r{Changed: *delta_x})
+          expect(result[:stderr]).to match(%r{Unchanged: *delta_y})
+          expect(result[:stderr]).to match(%r{Changed: *page_height})
+          expect(result[:stderr]).to match(%r{Merging environment from LABRAT_OPTIONS})
+          expect(result[:stderr]).to match(%r{Added: *flip: false})
+          expect(result[:stderr]).to match(%r{Added: *flop: true})
+          expect(result[:stderr]).to match(%r{Changed: *printer: seiko3 -> hp1})
+          expect(result[:stderr]).to match(%r{Merging command-line})
+          expect(result[:stderr]).to match(%r{Changed: *page_width: 33mm -> 10cm})
+          expect(result[:stderr]).to match(%r{Changed: *printer: hp1 -> hp2})
+
+          expect(hsh[:page_width]).to eq('10cm')
+          expect(hsh[:page_height]).to eq('102mm')
+          expect(hsh[:delta_x]).to eq('-3mm')
+          expect(hsh[:delta_y]).to eq('1cm')
+          expect(hsh[:nl_sep]).to eq('%%')
+          expect(hsh[:printer]).to eq('hp2')
         end
       end
     end
