@@ -1,4 +1,4 @@
-inherit_from: ~/.rubocop.yml
+inherit_from: ./rubocop-global.yml
 
 require:
   - rubocop-rspec
@@ -14,5 +14,7 @@ AllCops:
 #    - 'features/**/*'
   Exclude:
     - 'spec/tmp/**/*'
+    - 'spec/.examples.txt'
+    - 'bin/setup'
     - '.simplecov'
     - 'features/**/*'
