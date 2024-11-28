@@ -1,9 +1,26 @@
 module FatConfig
   RSpec.describe Hash do
     it "reports changes in a merge" do
-      old = {a: 1, b: 2, c: 3, d: 4, e: 5}
-      new = {d: 4, e: 8, f: 9, g: 11}
-      old.report_merge(new)
+      old = { a: 1, b: 2, c: 3, d: 4, e: 5 }
+      new = { d: 4, e: 8, f: 9, g: 11 }
+      result = capture { old.report_merge(new) }
+      # Stderr should be:
+      #
+      # Unchanged: a: 1
+      # Unchanged: b: 2
+      # Unchanged: c: 3
+      # Unchanged: d: 4 -> 4
+      # Changed:   e: 5 -> 8
+      # Added:     f: 9
+      # Added:     g: 11
+      warn result[:stderr]
+      expect(result[:stderr]).to match(/Unchanged:\s+a:\s+1/)
+      expect(result[:stderr]).to match(/Unchanged:\s+b:\s+2/)
+      expect(result[:stderr]).to match(/Unchanged:\s+c:\s+3/)
+      expect(result[:stderr]).to match(/Unchanged:\s+d:\s+4/)
+      expect(result[:stderr]).to match(/Changed:\s+e:\s+5 -> 8/)
+      expect(result[:stderr]).to match(/Added:\s+f:\s+9/)
+      expect(result[:stderr]).to match(/Added:\s+g:\s+11/)
     end
 
     it "parses a string into a Hash" do
