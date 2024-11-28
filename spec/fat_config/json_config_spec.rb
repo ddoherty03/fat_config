@@ -248,16 +248,16 @@ module FatConfig
 
           # With verbose on, stderr should be:
           #
-          # System config files found: /home/ded/src/fat_config/spec/fat_config/support/sandbox/etc/xdg/labrat/config.json
-          # User config files found: /home/ded/src/fat_config/spec/fat_config/support/sandbox/etc/xdg/labrat/config.json
-          # Merging system config from file '/home/ded/src/fat_config/spec/fat_config/support/sandbox/etc/xdg/labrat/config.json':
+          # System config files found: /home/ded/src/fat_config[...]/sandbox/etc/xdg/labrat/config.json
+          # User config files found: /home/ded/src/fat_config[...]/sandbox/etc/xdg/labrat/config.json
+          # Merging system config from file '/home/ded/src/fat_config[...]/sandbox/etc/xdg/labrat/config.json':
           #   Added: delta_x: -4mm
           #   Added: delta_y: 1cm
           #   Added: nl_sep: %%
           #   Added: page_height: 101mm
           #   Added: page_width: 33mm
           #   Added: printer: seiko3
-          # Merging user config from file '/home/ded/src/fat_config/spec/fat_config/support/sandbox/home/ded/.config/labrat/config.json':
+          # Merging user config from file '/home/ded/src/fat_config[...]/sandbox/home/ded/.config/labrat/config.json':
           #   Changed: delta_x: -4mm -> -3mm
           #   Unchanged: delta_y: 1cm
           #   Unchanged: nl_sep: %%
@@ -266,17 +266,17 @@ module FatConfig
           #   Unchanged: printer: seiko3
           hsh = {}
           result = capture { hsh = reader.read(verbose: true) }
-          expect(result[:stderr]).to match(%r{system config files found}i)
-          expect(result[:stderr]).to match(%r{user config files found}i)
+          expect(result[:stderr]).to match(/system config files found/i)
+          expect(result[:stderr]).to match(/user config files found/i)
           expect(result[:stderr]).to match(%r{merging system.*/etc/xdg/labrat/config.json}i)
           expect(result[:stderr]).to match(%r{merging user.*/\.config/labrat/config.json}i)
-          expect(result[:stderr]).to match(%r{Merging system config})
-          expect(result[:stderr]).to match(%r{Merging user config})
-          expect(result[:stderr]).to match(%r{Added: *delta_x})
-          expect(result[:stderr]).to match(%r{Added: *delta_y})
-          expect(result[:stderr]).to match(%r{Changed: *delta_x})
-          expect(result[:stderr]).to match(%r{Unchanged: *delta_y})
-          expect(result[:stderr]).to match(%r{Changed: *page_height})
+          expect(result[:stderr]).to match(/Merging system config/)
+          expect(result[:stderr]).to match(/Merging user config/)
+          expect(result[:stderr]).to match(/Added: *delta_x/)
+          expect(result[:stderr]).to match(/Added: *delta_y/)
+          expect(result[:stderr]).to match(/Changed: *delta_x/)
+          expect(result[:stderr]).to match(/Unchanged: *delta_y/)
+          expect(result[:stderr]).to match(/Changed: *page_height/)
 
           expect(hsh[:page_width]).to eq('33mm')
           expect(hsh[:page_height]).to eq('102mm')

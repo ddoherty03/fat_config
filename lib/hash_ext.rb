@@ -61,7 +61,7 @@ class Hash
     result = {}
     hsh.each_pair do |k, v|
       if v.nil?
-        if k.match(/\A((no[-_]?)|!)(?<name>.*)\z/)
+        if k =~ /\A((no[-_]?)|!)(?<name>.*)\z/
           new_key = Regexp.last_match["name"]
           result[new_key] = false
         else

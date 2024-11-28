@@ -222,9 +222,9 @@ module FatConfig
           hsh = {}
           # With verbose true, stderr should be the following:
           #
-          # System config files found: /home/ded/src/fat_config/spec/fat_config/support/sandbox/etc/xdg/labrat/config.yml
-          # User config files found: /home/ded/src/fat_config/spec/fat_config/support/sandbox/etc/xdg/labrat/config.yml
-          # Merging system config from file '/home/ded/src/fat_config/spec/fat_config/support/sandbox/etc/xdg/labrat/config.yml':
+          # System config files found: /home/ded/src/fat_config[...]/sandbox/etc/xdg/labrat/config.yml
+          # User config files found: /home/ded/src/fat_config[...]/sandbox/etc/xdg/labrat/config.yml
+          # Merging system config from file '/home/ded/src/fat_config[...]/sandbox/etc/xdg/labrat/config.yml':
           #   Added: delta_x: -4mm
           #   Added: delta_x: -4mm
           #   Added: delta_y: 1cm
@@ -232,7 +232,7 @@ module FatConfig
           #   Added: page_height: 101mm
           #   Added: page_width: 33mm
           #   Added: printer: seiko3
-          # Merging user config from file '/home/ded/src/fat_config/spec/fat_config/support/sandbox/home/ded/.config/labrat/config.yml':
+          # Merging user config from file '/home/ded/src/fat_config[...]/sandbox/home/ded/.config/labrat/config.yml':
           #   Changed: delta_x: -4mm -> -3mm
           #   Unchanged: delta_y: 1cm
           #   Unchanged: nl_sep: %%
@@ -242,13 +242,13 @@ module FatConfig
           result = capture { hsh = reader.read(verbose: true) }
           expect(result[:stderr]).to match(%r{/etc/xdg/labrat/config.yml})
           expect(result[:stderr]).to match(%r{/\.config/labrat/config.yml})
-          expect(result[:stderr]).to match(%r{Merging system config})
-          expect(result[:stderr]).to match(%r{Merging user config})
-          expect(result[:stderr]).to match(%r{Added: *delta_x})
-          expect(result[:stderr]).to match(%r{Added: *delta_y})
-          expect(result[:stderr]).to match(%r{Changed: *delta_x})
-          expect(result[:stderr]).to match(%r{Unchanged: *delta_y})
-          expect(result[:stderr]).to match(%r{Changed: *page_height})
+          expect(result[:stderr]).to match(/Merging system config/)
+          expect(result[:stderr]).to match(/Merging user config/)
+          expect(result[:stderr]).to match(/Added: *delta_x/)
+          expect(result[:stderr]).to match(/Added: *delta_y/)
+          expect(result[:stderr]).to match(/Changed: *delta_x/)
+          expect(result[:stderr]).to match(/Unchanged: *delta_y/)
+          expect(result[:stderr]).to match(/Changed: *page_height/)
 
           expect(hsh[:page_width]).to eq('33mm')
           expect(hsh[:page_height]).to eq('102mm')
@@ -494,20 +494,20 @@ module FatConfig
           result = capture { hsh = reader.read(command_line: command_line, verbose: true) }
           expect(result[:stderr]).to match(%r{/etc/xdg/labrat/config.yml})
           expect(result[:stderr]).to match(%r{/\.config/labrat/config.yml})
-          expect(result[:stderr]).to match(%r{Merging system config})
-          expect(result[:stderr]).to match(%r{Merging user config})
-          expect(result[:stderr]).to match(%r{Added: *delta_x})
-          expect(result[:stderr]).to match(%r{Added: *delta_y})
-          expect(result[:stderr]).to match(%r{Changed: *delta_x})
-          expect(result[:stderr]).to match(%r{Unchanged: *delta_y})
-          expect(result[:stderr]).to match(%r{Changed: *page_height})
-          expect(result[:stderr]).to match(%r{Merging environment from LABRAT_OPTIONS})
-          expect(result[:stderr]).to match(%r{Added: *flip: false})
-          expect(result[:stderr]).to match(%r{Added: *flop: true})
-          expect(result[:stderr]).to match(%r{Changed: *printer: seiko3 -> hp1})
-          expect(result[:stderr]).to match(%r{Merging command-line})
-          expect(result[:stderr]).to match(%r{Changed: *page_width: 33mm -> 10cm})
-          expect(result[:stderr]).to match(%r{Changed: *printer: hp1 -> hp2})
+          expect(result[:stderr]).to match(/Merging system config/)
+          expect(result[:stderr]).to match(/Merging user config/)
+          expect(result[:stderr]).to match(/Added: *delta_x/)
+          expect(result[:stderr]).to match(/Added: *delta_y/)
+          expect(result[:stderr]).to match(/Changed: *delta_x/)
+          expect(result[:stderr]).to match(/Unchanged: *delta_y/)
+          expect(result[:stderr]).to match(/Changed: *page_height/)
+          expect(result[:stderr]).to match(/Merging environment from LABRAT_OPTIONS/)
+          expect(result[:stderr]).to match(/Added: *flip: false/)
+          expect(result[:stderr]).to match(/Added: *flop: true/)
+          expect(result[:stderr]).to match(/Changed: *printer: seiko3 -> hp1/)
+          expect(result[:stderr]).to match(/Merging command-line/)
+          expect(result[:stderr]).to match(/Changed: *page_width: 33mm -> 10cm/)
+          expect(result[:stderr]).to match(/Changed: *printer: hp1 -> hp2/)
 
           expect(hsh[:page_width]).to eq('10cm')
           expect(hsh[:page_height]).to eq('102mm')
