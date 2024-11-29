@@ -174,6 +174,17 @@ module FatConfig
           expect(hsh[:printer]).to eq('seiko3')
         end
 
+        it 'reads an empty xdg system config file and reports empty' do
+          config_cfg = '{}'
+          setup_test_file("/etc/xdg/labrat/config.json", config_cfg)
+          hsh = nil
+          result = capture { hsh = reader.read(verbose: true) }
+          expect(result[:stderr]).to match(/System config files found/i)
+          expect(result[:stderr]).to match(/Merging system config from file/i)
+          expect(result[:stderr]).to match(/Empty config/i)
+          expect(hsh).to be_empty
+        end
+
         it 'reads an xdg ENV-specified user config file' do
           config_json = <<~JSON
             {

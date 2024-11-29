@@ -109,6 +109,8 @@ module FatConfig
     def merge_command_line(start_hash, command_line, verbose: false)
       return start_hash unless command_line
 
+      return start_hash if command_line.empty?
+
       cl_hash =
         case command_line
         when String

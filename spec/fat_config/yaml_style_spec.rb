@@ -157,6 +157,24 @@ module FatConfig
           expect(hsh[:printer]).to eq('seiko3')
         end
 
+        it 'reads an empty xdg system config file and reports empty' do
+          config_cfg = <<~CFG
+            # page-width: 33mm
+            # page-height: 101mm
+            # delta-x: -4mm
+            # delta-y: 1cm
+            # nl-sep: '%%'
+            # printer: seiko3
+          CFG
+          setup_test_file("/etc/xdg/labrat/config.yml", config_cfg)
+          hsh = nil
+          result = capture { hsh = reader.read(verbose: true) }
+          expect(result[:stderr]).to match(/System config files found/i)
+          expect(result[:stderr]).to match(/Merging system config from file/i)
+          expect(result[:stderr]).to match(/Empty config/i)
+          expect(hsh).to be_empty
+        end
+
         it 'reads an alternative base-named xdg user config file' do
           config_yml = <<~YAML
             page-width: 33mm

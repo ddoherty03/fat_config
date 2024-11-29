@@ -20,12 +20,17 @@ class Hash
 
   # Print to $stderr the changes wrought by merging new_hash into this one.
   def report_merge(new_hash, indent: 2)
+    space = ' ' * indent
+    if new_hash.empty?
+      warn "#{space}Empty config"
+      return self
+    end
+
     new_keys = new_hash.keys
     old_keys = keys
     unchanged_keys = old_keys - new_keys
     added_keys = new_keys - old_keys
     changed_keys = old_keys & new_keys
-    space = ' ' * indent
     (keys + added_keys).sort.each do |k|
       if (self[k].nil? || self[k].is_a?(Hash)) && new_hash[k].is_a?(Hash)
         # Recurse if the value is a Hash

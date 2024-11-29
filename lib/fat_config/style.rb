@@ -17,7 +17,7 @@ module FatConfig
       ['cfg', 'config']
     end
 
-    # Read all the fiven system and user-level config files in order from
+    # Read all the given system and user-level config files in order from
     # lower priority to higher priority, merging each along the way to build
     # the final Hash.  If requested, report the details to $stderr.
     def merge_files(sys_files = [], usr_files = [], verbose: false)
