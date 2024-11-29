@@ -8,9 +8,9 @@ require 'inifile'
 require 'json'
 
 require_relative "fat_config/version"
-require_relative "hash_ext"
+require_relative "fat_config/core_ext/hash_ext"
 require_relative "fat_config/reader"
-require_relative "fat_config/styles"
+require_relative "fat_config/style"
 
 module FatConfig
   class Error < StandardError; end
