@@ -74,8 +74,8 @@ module FatConfig
     # classic config paths so you can run this on a temporary directory set up for
     # testing.
     #
-    def read(command_line: {}, verbose: false)
-      paths = config_paths
+    def read(alt_base = app_name, command_line: {}, verbose: false)
+      paths = config_paths(alt_base)
       sys_configs = paths[:system]
       usr_configs = paths[:user]
       if verbose
@@ -129,7 +129,7 @@ module FatConfig
       "#{app_name.upcase}_OPTIONS"
     end
 
-    def config_paths
+    def config_paths(base = app_name)
       sys_configs = []
       sys_env_name = "#{app_name.upcase}_SYS_CONFIG"
       if ENV[sys_env_name]
@@ -138,9 +138,9 @@ module FatConfig
       else
         sys_configs +=
           if xdg
-            find_xdg_sys_config_files
+            find_xdg_sys_config_files(base)
           else
-            find_classic_sys_config_files
+            find_classic_sys_config_files(base)
           end
       end
 
@@ -152,9 +152,9 @@ module FatConfig
       else
         usr_configs <<
           if xdg
-            find_xdg_user_config_file
+            find_xdg_user_config_file(base)
           else
-            find_classic_user_config_file
+            find_classic_user_config_file(base)
           end
       end
       { system: sys_configs.compact, user: usr_configs.compact }
@@ -175,13 +175,13 @@ module FatConfig
     # app_name with the basename variants of base. Return the lowest priority
     # files first, highest last. Prefix the search locations with dir_prefix
     # if given.
-    def find_xdg_sys_config_files
+    def find_xdg_sys_config_files(base = app_name)
       configs = []
       xdg_search_dirs = ENV['XDG_CONFIG_DIRS']&.split(':')&.reverse || ['/etc/xdg']
       xdg_search_dirs.each do |dir|
         dir = File.expand_path(File.join(dir, app_name))
         dir = File.join(root_prefix, dir) unless root_prefix.nil? || root_prefix.strip.empty?
-        base_candidates = merger.dir_constrained_base_names(app_name)
+        base_candidates = merger.dir_constrained_base_names(base)
         config_fname = base_candidates.find { |b| File.readable?(File.join(dir, b)) }
         configs << File.join(dir, config_fname) if config_fname
       end
@@ -195,13 +195,13 @@ module FatConfig
     # system config. Return the name of a config file for this app in
     # XDG_CONFIG_HOME (or ~/.config by default).  Prefix the search location
     # with dir_prefix if given.
-    def find_xdg_user_config_file
+    def find_xdg_user_config_file(base = app_name)
       xdg_search_dir = ENV['XDG_CONFIG_HOME'] || ['~/.config']
       dir = File.expand_path(File.join(xdg_search_dir, app_name))
       dir = File.join(root_prefix, dir) unless root_prefix.strip.empty?
       return unless Dir.exist?(dir)
 
-      base_candidates = merger.dir_constrained_base_names(app_name)
+      base_candidates = merger.dir_constrained_base_names(base)
       config_fname = base_candidates.find { |b| File.readable?(File.join(dir, b)) }
       if config_fname
         File.join(dir, config_fname)
@@ -216,19 +216,19 @@ module FatConfig
     # app_name with the basename variants of base. Return the lowest priority
     # files first, highest last.  Prefix the search locations with dir_prefix
     # if given.
-    def find_classic_sys_config_files
+    def find_classic_sys_config_files(base = app_name)
       configs = []
       env_config = ENV["#{app_name.upcase}_SYS_CONFIG"]
       if env_config && File.readable?((config = File.join(root_prefix, File.expand_path(env_config))))
         configs = [config]
-      elsif File.readable?(config = File.join(root_prefix, "/etc/#{app_name}"))
+      elsif File.readable?(config = File.join(root_prefix, "/etc/#{base}"))
         configs = [config]
-      elsif File.readable?(config = File.join(root_prefix, "/etc/#{app_name}rc"))
+      elsif File.readable?(config = File.join(root_prefix, "/etc/#{base}rc"))
         configs = [config]
       else
         dir = File.join(root_prefix, "/etc/#{app_name}")
         if Dir.exist?(dir)
-          base_candidates = merger.classic_base_names(app_name)
+          base_candidates = merger.classic_base_names(base)
           config = base_candidates.find { |b| File.readable?(File.join(dir, b)) }
           configs = [File.join(dir, config)] if config
         end
@@ -240,17 +240,17 @@ module FatConfig
     # app_name with the basename variants of base. Return the lowest priority
     # files first, highest last.  Prefix the search locations with dir_prefix if
     # given.
-    def find_classic_user_config_file
+    def find_classic_user_config_file(base = app_name)
       config_fname = nil
       env_config = ENV["#{app_name.upcase}_CONFIG"]
       if env_config && File.readable?((config = File.join(root_prefix, File.expand_path(env_config))))
         config_fname = config
       elsif Dir.exist?(config_dir = File.join(root_prefix, File.expand_path("~/.#{app_name}")))
-        base_candidates = merger.dir_constrained_base_names(app_name)
+        base_candidates = merger.dir_constrained_base_names(base)
         base_fname = base_candidates.find { |b| File.readable?(File.join(config_dir, b)) }
         config_fname = File.join(config_dir, base_fname) if base_fname
       elsif Dir.exist?(config_dir = File.join(root_prefix, File.expand_path('~/')))
-        base_candidates = merger.dotted_base_names(app_name)
+        base_candidates = merger.dotted_base_names(base)
         base_fname = base_candidates.find { |b| File.readable?(File.join(config_dir, b)) }
         config_fname = File.join(config_dir, base_fname) if base_fname
       end
