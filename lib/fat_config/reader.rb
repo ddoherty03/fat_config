@@ -87,7 +87,7 @@ module FatConfig
         if usr_configs.empty?
           warn "No user config files found."
         else
-          warn "User config files found: #{sys_configs.join('; ')}"
+          warn "User config files found: #{usr_configs.join('; ')}"
         end
       end
       result = merger.merge_files(sys_configs, usr_configs, verbose: verbose)
