@@ -21,7 +21,7 @@ module FatConfig
   # deserialization:
   #
   # Config.read passes anything in the ~permitted_classes~ parameter onto Psych.safe_load.
-  class YAMLMerger
+  class YAMLMerger < Style
     def merge_files(sys_files = [], usr_files = [], verbose: false, permitted_classes: [])
       hash = {}
       files = (sys_files + usr_files).compact
@@ -49,6 +49,10 @@ module FatConfig
         hash.deep_merge!(yml_hash)
       end
       hash
+    end
+
+    def possible_extensions
+      super + ['yml', 'yaml']
     end
 
     # Return a list of possible YAML configuration file basenames where the

@@ -157,6 +157,25 @@ module FatConfig
           expect(hsh[:printer]).to eq('seiko3')
         end
 
+        it 'reads an alternative base-named xdg user config file' do
+          config_yml = <<~YAML
+            page-width: 33mm
+            page-height: 101mm
+            delta-x: -4mm
+            delta-y: 1cm
+            nl-sep: '%%'
+            printer: seiko3
+          YAML
+          setup_test_file("/home/#{ENV['USER']}/.config/labrat/labeldb.yml", config_yml)
+          hsh = reader.read('labeldb')
+          expect(hsh[:page_width]).to eq('33mm')
+          expect(hsh[:page_height]).to eq('101mm')
+          expect(hsh[:delta_x]).to eq('-4mm')
+          expect(hsh[:delta_y]).to eq('1cm')
+          expect(hsh[:nl_sep]).to eq('%%')
+          expect(hsh[:printer]).to eq('seiko3')
+        end
+
         it 'reads an xdg ENV-specified user config file' do
           config_yml = <<~YAML
             page-width: 33mm
