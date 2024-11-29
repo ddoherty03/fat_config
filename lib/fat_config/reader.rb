@@ -32,13 +32,13 @@ module FatConfig
       @merger =
         case @config_style
         when :yaml
-          YAMLMerger.new
+          YAMLStyle.new
         when :toml
-          TOMLMerger.new
+          TOMLStyle.new
         when :ini
-          INIMerger.new
+          INIStyle.new
         when :json
-          JSONMerger.new
+          JSONStyle.new
         else
           msg = "config style must be one of #{VALID_CONFIG_STYLES.join(', ')}"
           raise ArgumentError, msg

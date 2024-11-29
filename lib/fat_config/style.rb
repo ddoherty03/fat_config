@@ -67,7 +67,7 @@ module FatConfig
   end
 end
 
-require_relative 'styles/yaml_merger'
-require_relative 'styles/toml_merger'
-require_relative 'styles/ini_merger'
-require_relative 'styles/json_merger'
+require_relative 'styles/yaml_style'
+require_relative 'styles/toml_style'
+require_relative 'styles/ini_style'
+require_relative 'styles/json_style'
