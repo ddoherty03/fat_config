@@ -37,13 +37,43 @@ module FatConfig
             doe = "a deer, a female deer"
             ray = "a drop of golden sun"
             pi = 3.14159
+            lying = true
+            sorry = false
             xmas = true
+            bare = 'other'
+            # nothing = random string
+            # nothing =
             french-hens = 3
-            calling-birds = [ "huey", "dewey", "louie", "fred" ]
+            calling-birds = [ "huey", 2.71828, "louie", "fred" ]
             xmas-fifth-day = ""
-            golden-rings = 5
+            golden-rings = 0x5
             turtle-doves = "two"
-            the-day = 2024-12-24
+            the-day = 2024-12-25
+            the-moment = 2024-12-25T06:30:15
+
+            [partridges]
+            count = 1
+            location = "a pear tree"
+          TOML
+        end
+        let(:bad_toml_str) do
+          <<~TOML
+            doe = "a deer, a female deer"
+            ray = "a drop of golden sun"
+            pi = 3.14159
+            lying = true
+            sorry = false
+            xmas = true
+            bare = 'other'
+            # Here is the error on line 9
+            nothing =
+            french-hens = 3
+            calling-birds = [ "huey", 2.71828, "louie", "fred" ]
+            xmas-fifth-day = ""
+            golden-rings = 0x5
+            turtle-doves = "two"
+            the-day = 2024-12-25
+            the-moment = 2024-12-25T06:30:15
 
             [partridges]
             count = 1
@@ -52,12 +82,31 @@ module FatConfig
         end
 
         it 'can read a toml string' do
-          hsh = Tomlib.load(toml_str)
-          hsh = hsh.methodize
+          hsh = TOMLStyle.new.load_string(toml_str)
           expect(hsh.keys).to include(:doe)
           expect(hsh.keys).to include(:french_hens)
+          expect(hsh[:pi]).to be_a Float
+          expect(hsh[:lying]).to be_a TrueClass
+          expect(hsh[:sorry]).to be_a FalseClass
+          expect(hsh[:xmas]).to be_a TrueClass
           expect(hsh[:calling_birds]).to be_an Array
+          expect(hsh[:calling_birds][1]).to be_a Float
+          expect(hsh[:golden_rings]).to be_an Integer
           expect(hsh[:the_day]).to be_a Date
+          expect(hsh[:the_moment]).to be_a Time
+          expect(hsh[:partridges][:count]).to be_an Integer
+        end
+
+        it 'raises FatConfig::ParseError on a bad yaml string' do
+          expect { TOMLStyle.new.load_string(bad_toml_str) }.to raise_error(/line 9: syntax/i)
+        end
+
+        it 'raises FatConfig::ParseError on a bad yaml file' do
+          setup_test_file('/etc/xdg/labrat/config.toml', bad_toml_str)
+          expect {
+            Reader.new('labrat', config_style: :toml, root_prefix: sandbox_dir)
+              .read(verbose: true)
+          }.to raise_error(/line 9: syntax/i)
         end
       end
 

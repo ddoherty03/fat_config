@@ -24,8 +24,24 @@ module FatConfig
   #
   # Config.read adds Date, etc., to permitted classes, but provides for no others.
   class YAMLStyle < Style
+    def load_string(str)
+      Psych.safe_load(
+        str,
+        symbolize_names: true,
+        permitted_classes: [Date, DateTime, Time],
+      )&.methodize || {}
+    rescue Psych::SyntaxError => ex
+      raise FatConfig::ParseError, ex.to_s
+    end
+
     def load_file(file_name)
-      Psych.safe_load(File.read(file_name), permitted_classes: [Date, DateTime, Time]) || {}
+      Psych.safe_load_file(
+        file_name,
+        symbolize_names: true,
+        permitted_classes: [Date, DateTime, Time],
+      )&.methodize || {}
+    rescue Psych::SyntaxError => ex
+      raise FatConfig::ParseError, ex.to_s
     end
 
     def possible_extensions

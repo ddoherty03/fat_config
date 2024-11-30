@@ -51,14 +51,44 @@ module FatConfig
             }
           JSON
         end
+        let(:bad_json_str) do
+          <<~JSON
+            {
+                "doe": "a deer, a female deer",
+                "ray": "a drop of golden sun",
+                "pi": 3.14159,
+                "xmas": true,
+                "french-hens": 3,
+                "calling-birds": ["huey", "dewey", "louie", "fred"],
+                "xmas-fifth-day": "2024-12-24,
+                "golden-rings": 5,
+                "partridges": {
+                    "count": 1,
+                    "location": "a pear tree"
+                },
+                "turtle-doves": "two"
+            }
+          JSON
+        end
 
         it 'can read a JSON string' do
-          hsh = JSON.parse(json_str, symbolize_names: true)
-          hsh = hsh.methodize
+          hsh = JSONStyle.new.load_string(json_str)
           expect(hsh.keys).to include(:doe)
           expect(hsh.keys).to include(:french_hens)
           expect(hsh[:calling_birds]).to be_an Array
           expect(hsh[:xmas_fifth_day]).to be_a String
+        end
+
+        it 'raises FatConfig::ParseError on a bad string' do
+          expect { JSONStyle.new.load_string(bad_json_str) }.to raise_error(/unexpected token/i)
+        end
+
+        it 'raises FatConfig::ParseError on a bad file' do
+          setup_test_file('/etc/xdg/labrat/config.json', bad_json_str)
+          expect {
+            Reader.new('labrat', config_style: :json, root_prefix: sandbox_dir)
+              .read(verbose: true)
+          }.to raise_error(/unexpected token/i)
         end
       end
 

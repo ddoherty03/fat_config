@@ -28,16 +28,21 @@ module FatConfig
           <<~YAML
             ---
             doe: "a deer, a female deer"
-            ray: "a drop of golden sun"
+            ray: 'a drop of golden sun'
             pi: 3.14159
-            xmas: true
+            xmas: Yes
+            lying: TrUe
+            sorry: FaLsE
             french-hens: 3
+            nothing:
             calling-birds:
               - huey
               - dewey
               - louie
               - fred
-            xmas-fifth-day: 2024-12-24
+            the-day: 2024-12-25
+            the-moment: 2024-12-25T06:30:15
+            xmas-fifth-day: 2024-12-30
             french-hens: 3
             golden-rings: 5
             partridges:
@@ -47,13 +52,54 @@ module FatConfig
           YAML
         end
 
+        let(:bad_yaml_str) do
+          <<~YAML
+            doe: "a deer, a female deer"
+            ray: 'a drop of golden sun'
+            pi: 3.14.159
+            xmas Yes
+            the-day: 2024-12-25
+            golden-rings: 0x5
+            partridges:
+              count: 1
+              location: "a pear tree"
+            turtle-doves: two
+          YAML
+        end
+
         it 'can read a yaml string' do
-          hsh = Psych.safe_load(yaml_str, symbolize_names: true, permitted_classes: [Date])
-          hsh = hsh.methodize
+          hsh = YAMLStyle.new.load_string(yaml_str)
           expect(hsh.keys).to include(:doe)
           expect(hsh.keys).to include(:french_hens)
           expect(hsh[:calling_birds]).to be_an Array
           expect(hsh[:xmas_fifth_day]).to be_a Date
+          expect(hsh[:pi]).to be_a Float
+          expect(hsh[:pi]).to eq(3.14159)
+          expect(hsh[:lying]).to be_a TrueClass
+          expect(hsh[:lying]).to be true
+          expect(hsh[:sorry]).to be_a FalseClass
+          expect(hsh[:sorry]).to be false
+          expect(hsh[:nothing]).to be_nil
+          expect(hsh[:xmas]).to be_a TrueClass
+          expect(hsh[:xmas]).to be true
+          expect(hsh[:calling_birds]).to be_an Array
+          expect(hsh[:golden_rings]).to be_an Integer
+          expect(hsh[:the_day]).to be_a Date
+          expect(hsh[:the_moment]).to be_a Time
+          expect(hsh[:partridges][:count]).to be_an Integer
+          expect(hsh[:turtle_doves]).to be_a String
+        end
+
+        it 'raises FatConfig::ParseError on a bad yaml string' do
+          expect { YAMLStyle.new.load_string(bad_yaml_str) }.to raise_error(/could not find expected ':'/i)
+        end
+
+        it 'raises FatConfig::ParseError on a bad yaml file' do
+          setup_test_file('/etc/xdg/labrat/config.yml', bad_yaml_str)
+          expect {
+            Reader.new('labrat', config_style: :yaml, root_prefix: sandbox_dir)
+              .read(verbose: true)
+          }.to raise_error(/could not find expected ':'/i)
         end
       end
 

@@ -42,6 +42,28 @@ module FatConfig
             xmas = true
             french-hens = 3
             calling-birds = [ "huey", "dewey", "louie", "fred" ]
+            ducks = { "huey", "dewey", "louie", "fred" }
+            xmas-fifth-day = ""
+            golden-rings = 0o11
+            turtle-doves = "two"
+            the-day = 2024-12-24
+
+            [partridges]
+            count = 1
+            location = "a pear tree"
+          INI
+        end
+        let(:bad_ini_str) do
+          <<~INI
+            doe = "a deer, a female deer"
+            ray = "a drop of golden sun"
+            pi = 3.14159
+
+            [section1]
+            xmas = true
+            french-hens = 3
+            # Here is error on line 9
+            calling-birds - "huey", "dewey", "louie", "fred
             xmas-fifth-day = ""
             golden-rings = 5
             turtle-doves = "two"
@@ -54,12 +76,23 @@ module FatConfig
         end
 
         it 'can read a INI string' do
-          hsh = IniFile.new(content: ini_str).to_h
-          hsh = hsh.methodize
+          hsh = INIStyle.new.load_string(ini_str)
           expect(hsh.keys).to include(:global)
           expect(hsh.keys).to include(:section1)
           expect(hsh[:global][:pi]).to be_a Float
           expect(hsh[:section1][:the_day]).to be_a String
+        end
+
+        it 'raises FatConfig::ParseError on a bad string' do
+          expect { INIStyle.new.load_string(bad_ini_str) }.to raise_error(/could not parse.*calling/i)
+        end
+
+        it 'raises FatConfig::ParseError on a bad file' do
+          setup_test_file('/etc/xdg/labrat/config.ini', bad_ini_str)
+          expect {
+            Reader.new('labrat', config_style: :ini, root_prefix: sandbox_dir)
+              .read(verbose: true)
+          }.to raise_error(/could not parse.*calling/i)
         end
       end
 
