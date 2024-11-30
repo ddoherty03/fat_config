@@ -8,16 +8,14 @@ module FatConfig
     VALID_CONFIG_STYLES = [:yaml, :toml, :json, :ini]
 
     # - ~app_name~ :: used to form environment variables for config locations.
-    # - ~config_lang~ :: either :yaml or :toml or :json or :ini
-    # - ~root_prefix~ :: an alternate root of the assumed file system, by
-    #   default ''.  This facilitated testing.
+    # - ~style~ :: either :yaml or :toml or :json or :ini
     # - ~xdg~ :: whether follow XDG desktop conventions, by default true; if
     #   false, use "classic" UNIX config practices with /etc/ and ~/.baserc.
-    # - ~permitted_classes~ :: Psych parameter for classes that can be
-    #   deserialized into Ruby class instances,
-    attr_reader :app_name, :config_style, :root_prefix, :xdg, :merger, :permitted_classes
+    # - ~root_prefix~ :: an alternate root of the assumed file system, by
+    #   default ''.  This facilitated testing.
+    attr_reader :app_name, :style, :root_prefix, :xdg
 
-    def initialize(app_name, config_style: :yaml, root_prefix: '', xdg: true, permitted_classes: nil)
+    def initialize(app_name, style: :yaml, xdg: true, root_prefix: '')
       @app_name = app_name.strip.downcase
       raise ArgumentError, "reader app name may not be blank" if @app_name.blank?
 
@@ -26,11 +24,10 @@ module FatConfig
 
       @root_prefix = root_prefix
       @xdg = xdg
-      @permitted_classes = permitted_classes || []
 
-      @config_style = config_style.downcase.to_sym
-      @merger =
-        case @config_style
+      style = style.downcase.to_sym
+      @style =
+        case style
         when :yaml
           YAMLStyle.new
         when :toml
@@ -45,11 +42,11 @@ module FatConfig
         end
     end
 
-    # Return a Hash of the YAML-ized config files for app_name directories.
+    # Return a Hash of the config files for app_name directories.
     # Config file may be located in either the xdg locations (containing any
     # variant of base: base, base.yml, or base.yaml) or in the classic
     # locations (/etc/app_namerc, /etc/app_name, ~/.app_namerc~, or
-    # ~/.app_name/base[.ya?ml]). Return a hash that reflects the merging of
+    # ~/.app_name/base.ext). Return a hash that reflects the merging of
     # those files according to the following priorities, from highest to
     # lowest:
     #
@@ -90,7 +87,7 @@ module FatConfig
           warn "User config files found: #{usr_configs.join('; ')}"
         end
       end
-      result = merger.merge_files(sys_configs, usr_configs, verbose: verbose)
+      result = style.merge_files(sys_configs, usr_configs, verbose: verbose)
       result = merge_environment(result, verbose: verbose)
       merge_command_line(result, command_line, verbose: verbose)
     end
@@ -183,7 +180,7 @@ module FatConfig
       xdg_search_dirs.each do |dir|
         dir = File.expand_path(File.join(dir, app_name))
         dir = File.join(root_prefix, dir) unless root_prefix.nil? || root_prefix.strip.empty?
-        base_candidates = merger.dir_constrained_base_names(base)
+        base_candidates = style.dir_constrained_base_names(base)
         config_fname = base_candidates.find { |b| File.readable?(File.join(dir, b)) }
         configs << File.join(dir, config_fname) if config_fname
       end
@@ -203,7 +200,7 @@ module FatConfig
       dir = File.join(root_prefix, dir) unless root_prefix.strip.empty?
       return unless Dir.exist?(dir)
 
-      base_candidates = merger.dir_constrained_base_names(base)
+      base_candidates = style.dir_constrained_base_names(base)
       config_fname = base_candidates.find { |b| File.readable?(File.join(dir, b)) }
       if config_fname
         File.join(dir, config_fname)
@@ -230,7 +227,7 @@ module FatConfig
       else
         dir = File.join(root_prefix, "/etc/#{app_name}")
         if Dir.exist?(dir)
-          base_candidates = merger.classic_base_names(base)
+          base_candidates = style.classic_base_names(base)
           config = base_candidates.find { |b| File.readable?(File.join(dir, b)) }
           configs = [File.join(dir, config)] if config
         end
@@ -248,11 +245,11 @@ module FatConfig
       if env_config && File.readable?((config = File.join(root_prefix, File.expand_path(env_config))))
         config_fname = config
       elsif Dir.exist?(config_dir = File.join(root_prefix, File.expand_path("~/.#{app_name}")))
-        base_candidates = merger.dir_constrained_base_names(base)
+        base_candidates = style.dir_constrained_base_names(base)
         base_fname = base_candidates.find { |b| File.readable?(File.join(config_dir, b)) }
         config_fname = File.join(config_dir, base_fname) if base_fname
       elsif Dir.exist?(config_dir = File.join(root_prefix, File.expand_path('~/')))
-        base_candidates = merger.dotted_base_names(base)
+        base_candidates = style.dotted_base_names(base)
         base_fname = base_candidates.find { |b| File.readable?(File.join(config_dir, b)) }
         config_fname = File.join(config_dir, base_fname) if base_fname
       end

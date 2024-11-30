@@ -86,14 +86,14 @@ module FatConfig
         it 'raises FatConfig::ParseError on a bad file' do
           setup_test_file('/etc/xdg/labrat/config.json', bad_json_str)
           expect {
-            Reader.new('labrat', config_style: :json, root_prefix: sandbox_dir)
+            Reader.new('labrat', style: :json, root_prefix: sandbox_dir)
               .read(verbose: true)
           }.to raise_error(/unexpected token/i)
         end
       end
 
       describe 'Reading XDG config files' do
-        let(:reader) { Reader.new('labrat', config_style: :json, root_prefix: sandbox_dir) }
+        let(:reader) { Reader.new('labrat', style: :json, root_prefix: sandbox_dir) }
 
         it 'reads an xdg system config file' do
           config_json = <<~JSON
@@ -362,7 +362,7 @@ module FatConfig
       end
 
       describe 'Reading classic config files' do
-        let(:reader) { Reader.new('labrat', xdg: false, config_style: 'json', root_prefix: sandbox_dir) }
+        let(:reader) { Reader.new('labrat', xdg: false, style: 'json', root_prefix: sandbox_dir) }
 
         it 'read an empty classic system config file' do
           ENV['LABRAT_SYS_CONFIG'] = '/etc/labrat/configjson'

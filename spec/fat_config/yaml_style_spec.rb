@@ -97,7 +97,7 @@ module FatConfig
         it 'raises FatConfig::ParseError on a bad yaml file' do
           setup_test_file('/etc/xdg/labrat/config.yml', bad_yaml_str)
           expect {
-            Reader.new('labrat', config_style: :yaml, root_prefix: sandbox_dir)
+            Reader.new('labrat', style: :yaml, root_prefix: sandbox_dir)
               .read(verbose: true)
           }.to raise_error(/could not find expected ':'/i)
         end

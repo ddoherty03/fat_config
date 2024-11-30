@@ -104,14 +104,14 @@ module FatConfig
         it 'raises FatConfig::ParseError on a bad yaml file' do
           setup_test_file('/etc/xdg/labrat/config.toml', bad_toml_str)
           expect {
-            Reader.new('labrat', config_style: :toml, root_prefix: sandbox_dir)
+            Reader.new('labrat', style: :toml, root_prefix: sandbox_dir)
               .read(verbose: true)
           }.to raise_error(/line 9: syntax/i)
         end
       end
 
       describe 'Reading XDG config files' do
-        let(:reader) { Reader.new('labrat', config_style: :toml, root_prefix: sandbox_dir) }
+        let(:reader) { Reader.new('labrat', style: :toml, root_prefix: sandbox_dir) }
 
         it 'reads an xdg system config file' do
           config_tml = <<~TOML
@@ -363,7 +363,7 @@ module FatConfig
       end
 
       describe 'Reading classic config files' do
-        let(:reader) { Reader.new('labrat', xdg: false, config_style: :toml, root_prefix: sandbox_dir) }
+        let(:reader) { Reader.new('labrat', xdg: false, style: :toml, root_prefix: sandbox_dir) }
 
         it 'read an empty classic system config file' do
           ENV['LABRAT_SYS_CONFIG'] = '/etc/labrat/config.toml'
