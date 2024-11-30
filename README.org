@@ -1,0 +1,119 @@
+# FatConfig
+
+FatConfig eliminates the tedium of reading configuration files and the
+environment to populate a Hash of config settings.  You need only define a
+FatConfig::Reader and you can then call its #read method to look for, read,
+translate, and merge any config files into a single Hash that encapsulates all
+the files in the proper priority.
+
+* Example:
+#+begin_src ruby
+  reader = FatConfig::Reader.new('myapp', config_style: :yaml)
+  config = reader.read
+#+end_src
+
+This will read all config settings according to the XDG standards, in
+particular, following ~XDG~ conventions:
+
+1. If the environment variable ~MYAPP_SYS_CONFIG~ is set, it will look in the
+   file pointed to for any system-level config file.
+2. If the environment variable ~MYAPP_SYS_CONFIG~ is NOT set, it will read any
+   system-level config file from ~/etc/xdg/myapp~ or, if the XDG_CONFIG_DIRS
+   environment variable is set to a list of colon-separated directories, it
+   will look in each of those instead of ~/etc/xdg~ for a config directory
+   called 'myapp'.  If more than one XDG_CONFIG_DIRS is given, they are
+   treated as listed in order of precedence, so the first-listed directory
+   will be given priority over later ones.  All such directories will be read,
+   and any config file will be merged into the resulting Hash, but they will
+   be visited in reverse order so that the first-named directories override
+   the earlier ones.
+3. If the environment variable ~MYAPP_CONFIG~ is set, it will look in the file
+   pointed to for any user-level config file.
+4. If the environment variable ~MYAPP_CONFIG~ is NOT set, it will read any
+   user-level config file from ~$HOME/.config/myapp~ or, if the
+   XDG_CONFIG_HOME environment variable is set to an alternative directory, it
+   will look it instead of ~$HOME/.config~ for a config directory called
+   'myapp'.  Note that in this case, XDG_CONFIG_HOME is intended to contain
+   the name of a single directory, not a list of directories as with the
+   system-level config files.
+5. It will then merger in any options set in the environment variable
+   ~MYAPP_OPTIONS~, overriding any conflicting settings gotten from reading
+   the system- and user-level file.  It will interpret the String from the
+   environment variable as discussed below.
+6. Finally, it will merge in any options given in the optional ~command_line:~
+   named parameter to the ~#read~ method.  That parameter can either be a ~Hash~
+   or a ~String~.  If it is a ~String~, it is interpreted the same way as the
+   environment variable ~MYAPP_OPTIONS~ just mentioned; if it is a ~Hash~, it
+   is used directly and merged into the hash returned from the prior methods.
+
+** Hash Keys
+
+The returned Hash will have symbols as keys, using the names given in the
+config files, except that they will have any hyphens converted to the
+underscore.  Thus the config setting "page-width: 6.5in" in a config file will
+result in a Hash entry of ~{page_width: '6.5in'}~.
+
+** Hash Values
+Whether the values of the returned Hash will be 'deserialized' into a Ruby
+object is controlled by the style of the configuration files.  For example,
+the ~:yaml~ style deserializes the following types:
+
+*** YAML
+
+  - TrueClass (the string 'true' of whatever case)
+  - FalseClass (the string 'false' of whatever case)
+  - NilClass (when no value given)
+  - Integer (when it looks like an whole number)
+  - Float (when it looks like an decimal number)
+  - String (if not one of the other classes or if enclosed in single- or double-quotes)
+  - Array (when sub-elements introduced with '-', each typed by these rules)
+  - Hash, (when sub-elements introduced with 'key:', each typed by these rules) and,
+  - Date, DateTime, and Time, which FatConfig adds to the foregoing default
+    types deserialized by the default YAML library.
+
+*** TOML
+
+  - TrueClass (exactly the string 'true')
+  - FalseClass (exactly the string 'false')
+  - Integer (when it looks like an whole number or 0x... or 0o... hex or octal)
+  - Float (when it looks like an decimal number)
+  - String (only if enclosed in single- or double-quotes)
+  - Array (when sub-elements enclosed in [...], each typed by these rules)
+  - Hash, ([hash-key] followed by sub-elements, each typed by these rules) and,
+  - Date and Time, when given in ISO form YYYY-MM-DD or YYYY-MM-DDThh:mm:ss
+
+*** JSON
+
+*** INI
+
+* Installation
+
+Install the gem and add to the application's Gemfile by executing:
+
+#+begin_src sh
+  bundle add fat_config
+#+end_src
+
+If bundler is not being used to manage dependencies, install the gem by executing:
+
+#+begin_src sh
+  gem install fat_config
+#+end_src
+
+* Usage
+
+TODO: Write usage instructions here
+
+* Development
+
+After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+
+To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+
+* Contributing
+
+Bug reports and pull requests are welcome on GitHub at https://github.com/ddoherty03/fat_config.
+
+* License
+
+The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
