@@ -3,7 +3,7 @@ module FatConfig
     def load_string(str)
       # Since INIFile does not have a method for parsing strings, we have to
       # create a file with the string as content.
-      tmp_path = File.join("/tmp", "fat_config/ini#{$$}")
+      tmp_path = File.join("/tmp", "fat_config/ini#{$PID}")
       File.write(tmp_path, str)
       load_file(tmp_path)
     rescue IniFile::Error => ex

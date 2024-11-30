@@ -2,7 +2,7 @@ module FatConfig
   class JSONStyle < Style
     def load_string(str)
       JSON.parse(str, symbolize_name: true).methodize
-    rescue JSON::ParserError, JSON::NestingError => ex
+    rescue JSON::ParserError => ex
       raise FatConfig::ParseError, ex.to_s
     end
 
