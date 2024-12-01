@@ -9,6 +9,8 @@ the files in the proper priority.
 * Usage:
 
 #+begin_src ruby
+  require 'fat_config'
+
   reader = FatConfig::Reader.new('myapp')
   config = reader.read
 #+end_src
