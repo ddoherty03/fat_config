@@ -264,10 +264,6 @@ If bundler is not being used to manage dependencies, install the gem by executin
   gem install fat_config
 #+end_src
 
-* Usage
-
-TODO: Write usage instructions here
-
 * Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then,
