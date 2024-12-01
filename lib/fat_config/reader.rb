@@ -240,20 +240,23 @@ module FatConfig
     # files first, highest last.  Prefix the search locations with dir_prefix if
     # given.
     def find_classic_user_config_file(base = app_name)
-      config_fname = nil
       env_config = ENV["#{app_name.upcase}_CONFIG"]
       if env_config && File.readable?((config = File.join(root_prefix, File.expand_path(env_config))))
-        config_fname = config
-      elsif Dir.exist?(config_dir = File.join(root_prefix, File.expand_path("~/.#{app_name}")))
-        base_candidates = style.dir_constrained_base_names(base)
-        base_fname = base_candidates.find { |b| File.readable?(File.join(config_dir, b)) }
-        config_fname = File.join(config_dir, base_fname) if base_fname
-      elsif Dir.exist?(config_dir = File.join(root_prefix, File.expand_path('~/')))
+        config
+      else
+        config_dir = File.join(root_prefix, File.expand_path("~/"))
         base_candidates = style.dotted_base_names(base)
-        base_fname = base_candidates.find { |b| File.readable?(File.join(config_dir, b)) }
-        config_fname = File.join(config_dir, base_fname) if base_fname
+        base_fname = base_candidates.find do |b|
+          File.file?(File.join(config_dir, b)) && File.readable?(File.join(config_dir, b))
+        end
+        if base_fname
+          File.join(config_dir, base_fname)
+        elsif Dir.exist?(config_dir = File.join(root_prefix, File.expand_path("~/.#{app_name}")))
+          base_candidates = style.dir_constrained_base_names(base)
+          base_fname = base_candidates.find { |b| File.readable?(File.join(config_dir, b)) }
+          File.join(config_dir, base_fname) if base_fname
+        end
       end
-      config_fname
     end
   end
 end
