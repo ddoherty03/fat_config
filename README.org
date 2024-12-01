@@ -1,27 +1,33 @@
 # FatConfig
 
-FatConfig eliminates the tedium of reading configuration files and the
+~FatConfig~ eliminates the tedium of reading configuration files and the
 environment to populate a Hash of config settings.  You need only define a
-FatConfig::Reader and you can then call its #read method to look for, read,
+~FatConfig::Reader~ and you can then call its #read method to look for, read,
 translate, and merge any config files into a single Hash that encapsulates all
 the files in the proper priority.
 
-* Example:
+* Usage:
+
 #+begin_src ruby
-  reader = FatConfig::Reader.new('myapp', config_style: :yaml)
+  reader = FatConfig::Reader.new('myapp')
   config = reader.read
 #+end_src
 
-This will read all config settings according to the XDG standards, in
-particular, following ~XDG~ conventions:
+The ~reader.read~ method will parse the config files (by default assumed to be
+YAML files), config environment variable, and optional command-line parameter
+and return the composite config as a Hash.
+
+** Following XDG Standards
+
+By default, ~FatConfig::Reader#read~ follows the [[https://specifications.freedesktop.org/basedir-spec/latest/][XDG Desktop Standards]]:
 
 1. If the environment variable ~MYAPP_SYS_CONFIG~ is set, it will look in the
    file pointed to for any system-level config file.
 2. If the environment variable ~MYAPP_SYS_CONFIG~ is NOT set, it will read any
-   system-level config file from ~/etc/xdg/myapp~ or, if the XDG_CONFIG_DIRS
+   system-level config file from ~/etc/xdg/myapp~ or, if the ~XDG_CONFIG_DIRS~
    environment variable is set to a list of colon-separated directories, it
    will look in each of those instead of ~/etc/xdg~ for a config directory
-   called 'myapp'.  If more than one XDG_CONFIG_DIRS is given, they are
+   called 'myapp'.  If more than one ~XDG_CONFIG_DIRS~ is given, they are
    treated as listed in order of precedence, so the first-listed directory
    will be given priority over later ones.  All such directories will be read,
    and any config file will be merged into the resulting Hash, but they will
@@ -31,12 +37,12 @@ particular, following ~XDG~ conventions:
    pointed to for any user-level config file.
 4. If the environment variable ~MYAPP_CONFIG~ is NOT set, it will read any
    user-level config file from ~$HOME/.config/myapp~ or, if the
-   XDG_CONFIG_HOME environment variable is set to an alternative directory, it
-   will look it instead of ~$HOME/.config~ for a config directory called
-   'myapp'.  Note that in this case, XDG_CONFIG_HOME is intended to contain
+   ~XDG_CONFIG_HOME~ environment variable is set to an alternative directory,
+   it will look it instead of ~$HOME/.config~ for a config directory called
+   'myapp'.  Note that in this case, ~XDG_CONFIG_HOME~ is intended to contain
    the name of a single directory, not a list of directories as with the
    system-level config files.
-5. It will then merger in any options set in the environment variable
+5. It will then merge in any options set in the environment variable
    ~MYAPP_OPTIONS~, overriding any conflicting settings gotten from reading
    the system- and user-level file.  It will interpret the String from the
    environment variable as discussed below.
@@ -45,6 +51,72 @@ particular, following ~XDG~ conventions:
    or a ~String~.  If it is a ~String~, it is interpreted the same way as the
    environment variable ~MYAPP_OPTIONS~ just mentioned; if it is a ~Hash~, it
    is used directly and merged into the hash returned from the prior methods.
+
+** Following Classic UNIX Standards
+
+With the optional ~:xdg~ keyword parameter to ~FatConfig::Reader#read~ set to
+~false~, it will follow "classic" UNIX config file conventions.  There is no
+"standard" here, but there are some conventions, and the closest thing I can
+find to describe the conventions is this from the [[https://refspecs.linuxfoundation.org/FHS_3.0/fhs/ch03s08.html#homeReferences][UNIX File Heirarch Standard]]
+website:
+
+#+begin_quote
+ User specific configuration files for applications are stored in the user's
+ home directory in a file that starts with the '.' character (a "dot
+ file"). If an application needs to create more than one dot file then they
+ should be placed in a subdirectory with a name starting with a '.' character,
+ (a "dot directory"). In this case the configuration files should not start
+ with the '.' character.
+#+end_quote
+
+~FatConfig~'s implementation of this suggestion are as follows:
+
+1. If the environment variable ~MYAPP_SYS_CONFIG~ is set, it will look in the
+   file pointed to for any system-level config file.
+2. If the environment variable ~MYAPP_SYS_CONFIG~ is NOT set, then either
+   - if the file ~/etc/my_app~ exists and is readable, it is considered the
+     system-wide config file for ~my_app~, or
+   - if the file ~/etc/my_apprc~ exists and is readable, it is considered the
+     system-wide config file for ~my_app~, or
+   - if the /directory/ ~/etc/my_app~ exists, the first file named ~config~,
+     ~config.yml~, ~config.yaml~ (this assumes the default YAML style, the
+     extensions looked for will be adjusted for other styles) ,
+     ~myapp.config~, or ~myapp.cfg~ that is readable will be considered the
+     system-wide config file for ~my_app~
+3. If the environment variable ~MYAPP_CONFIG~ is set, it will look in the file
+   pointed to for any user-level config file.
+4. If the environment variable ~MYAPP_CONFIG~ is NOT set, then either,
+   - if the file, =~/.my_app= or =~/.my_apprc~= exist and are readable, that
+     file is used as the user-level config file,
+   - otherwise, if the directory =~/.my_app/= exists, the first file in that
+     directory named ~config~, ~config.yml~, ~config.yaml~, ~myapp.config~, or
+     ~myapp.cfg~ that is readable will be considered the user-level config
+     file for ~my_app~
+5. It will then merge in any options set in the environment variable
+   ~MYAPP_OPTIONS~, overriding any conflicting settings gotten from reading
+   the system- and user-level file.  It will interpret the String from the
+6. Finally, it will merge in any options given in the optional ~command_line:~
+   named parameter to the ~#read~ method.  That parameter can either be a ~Hash~
+   or a ~String~.  If it is a ~String~, it is interpreted the same way as the
+   environment variable ~MYAPP_OPTIONS~ just mentioned; if it is a ~Hash~, it
+   is used directly and merged into the hash returned from the prior methods.
+
+
+** Available Config File Styles
+
+~FatConfig::Reader.new~ takes the optional keyword argument, ~:style~, to
+indicate what style to use for config files.  It can be one of:
+
+- ~yaml~ :: See [[https://yaml.org/spec/1.2.2/][YAML Specs]],
+- ~toml~ :: See [[https://toml.io/en/][TOML Specs]],
+- ~json~ :: See [[https://datatracker.ietf.org/doc/html/rfc8259][JSON Specs]], or
+- ~ini~ :: See [[https://en.wikipedia.org/wiki/INI_file][INI File on Wikipedia]]
+
+By default, the style is ~yaml~.  Note that the style only pertains to the
+syntax of on-disk configuration files.  Configuration can also be set by an
+environment variable, ~MYAPP_OPTIONS~ and by a command-line string optionally
+provided to the ~#read~ method.  Those are simple parsers that parse strings
+of option settings as explained below.
 
 ** Hash Keys
 
@@ -84,7 +156,25 @@ the ~:yaml~ style deserializes the following types:
 
 *** JSON
 
+  - TrueClass (exactly the string 'true')
+  - FalseClass (exactly the string 'false')
+  - Integer (when it looks like an decimal whole number, NO hex or octal)
+  - Float (when it looks like an decimal number)
+  - String (only if enclosed in single- or double-quotes)
+  - Array (when sub-elements enclosed in [...], each typed by these rules)
+  - Hash, (when sub-elements enclosed in {...}, each typed by these rules) and,
+  - Date and Time, NOT deserialized, returns a parse error
+
 *** INI
+
+  - TrueClass (exactly the string 'true')
+  - FalseClass (exactly the string 'false')
+  - Integer (when it looks like an whole number or 0x... or 0o... hex or octal)
+  - Float (when it looks like an decimal number)
+  - String (anything else)
+  - Array NOT deserialized, returned as a String
+  - Hash, NOT deserialized, returned as a String
+  - Date and Time, NOT deserialized, returned as a String
 
 * Installation
 
