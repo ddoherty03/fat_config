@@ -24,17 +24,19 @@ module FatConfig
     end
 
     it "parses a string into a Hash" do
-      hsh = Hash.parse_opts("--hello-thing=world --doit --the_num=3.14159 --the-date=2024-11-27 --no-bueno")
-      expect(hsh.keys).to include(:hello_thing)
+      hsh = Hash.parse_opts("--hello='hello, world' --gb=goodbye junk --doit --the-num=3.14159 --no-bueno --~junk")
+      expect(hsh.keys).to include(:hello)
+      expect(hsh.keys).to include(:gb)
       expect(hsh.keys).to include(:doit)
       expect(hsh.keys).to include(:the_num)
-      expect(hsh.keys).to include(:the_date)
       expect(hsh.keys).to include(:bueno)
-      expect(hsh[:hello_thing]).to eq("world")
+      expect(hsh.keys).to include(:junk)
+      expect(hsh[:hello]).to eq("hello, world")
+      expect(hsh[:gb]).to eq("goodbye")
       expect(hsh[:doit]).to be(true)
       expect(hsh[:the_num]).to eq("3.14159")
-      expect(hsh[:the_date]).to eq("2024-11-27")
       expect(hsh[:bueno]).to be(false)
+      expect(hsh[:junk]).to be(false)
     end
 
     it "ignores non-option text" do

@@ -55,23 +55,33 @@ class Hash
     self
   end
 
+  require 'fat_core/string'
+
   # Parse a string of the form "--key-one=val1 --flag --key2=val2" into a
-  # Hash, where the value of the --flag is set to true unless its name starts
-  # with "no" or "no_" or "!", then set it to false and its name is stripped
-  # of the leading negator.  It also converts all the keys to symbols suitable
-  # as Ruby id's using Hash#methodize.  Ignore anything that doesn't look like
-  # an option or flag.
+  # Hash,
+  #
+  # 1. where normal option values can be surrounded by single- or double-quotes
+  #    if they are meant to include any spaced and
+  # 2. where the value of any "flag", such as --flag (with no value given) is
+  #    set to ~true~ unless its name starts with "no" or "no_" or "!" or "~",
+  #    then set it to false and its name is stripped of the leading negator.
+  #
+  # It also converts all the keys to symbols suitable as Ruby id's using
+  # Hash#methodize.  It ignores anything that doesn't look like an option or
+  # flag.
   def self.parse_opts(str)
-    hsh = Hash[str.scan(/--?([^=\s]+)(?:=(\S+))?/)]
+    hsh = Hash[str.scan(/--?([^=\s]+)(?:=("[^"]*"|'[^']*'|\S+))?/)]
     result = {}
     hsh.each_pair do |k, v|
       if v.nil?
-        if k =~ /\A((no[-_]?)|!)(?<name>.*)\z/
+        if k =~ /\A((no[-_]?)|!|~)(?<name>.*)\z/
           new_key = Regexp.last_match["name"]
           result[new_key] = false
         else
           result[k] = true
         end
+      elsif v.match?(/\A['"].*['"]\z/)
+        result[k] = v.clean.sub(/\A['"]/, '').sub(/['"]\z/, '')
       else
         result[k] = v
       end
