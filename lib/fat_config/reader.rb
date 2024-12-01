@@ -15,34 +15,6 @@ module FatConfig
     #   default ''.  This facilitated testing.
     attr_reader :app_name, :style, :root_prefix, :xdg
 
-    def initialize(app_name, style: :yaml, xdg: true, root_prefix: '')
-      @app_name = app_name.strip.downcase
-      raise ArgumentError, "reader app name may not be blank" if @app_name.blank?
-
-      msg = "reader app name may only contain letters, numbers, and underscores"
-      raise ArgumentError, msg unless app_name.match?(/\A[a-z][a-z0-9_]*\z/)
-
-      @root_prefix = root_prefix
-      @xdg = xdg
-
-      style = style.downcase.to_sym
-      @style =
-        case style
-        when :yaml
-          YAMLStyle.new
-        when :toml
-          TOMLStyle.new
-        when :ini
-          INIStyle.new
-        when :json
-          JSONStyle.new
-        else
-          msg = "config style must be one of #{VALID_CONFIG_STYLES.join(', ')}"
-          raise ArgumentError, msg
-        end
-    end
-
-    # Return a Hash of the config files for app_name directories.
     # Config file may be located in either the xdg locations (containing any
     # variant of base: base, base.yml, or base.yaml) or in the classic
     # locations (/etc/app_namerc, /etc/app_name, ~/.app_namerc~, or
@@ -66,11 +38,49 @@ module FatConfig
     #    b. Then, either:
     #       A. The file pointed to by the environment variable APPNAME_SYS_CONFIG or
     #       B. System classic config files,
+    def initialize(app_name, style: :yaml, xdg: true, root_prefix: '')
+      @app_name = app_name.strip.downcase
+      raise ArgumentError, "reader app name may not be blank" if @app_name.blank?
+
+      msg = "reader app name may only contain letters, numbers, and underscores"
+      raise ArgumentError, msg unless app_name.match?(/\A[a-z][a-z0-9_]*\z/)
+
+      @root_prefix = root_prefix
+      @xdg = xdg
+
+      style = style.to_s.downcase.to_sym
+      @style =
+        case style
+        when :yaml
+          YAMLStyle.new
+        when :toml
+          TOMLStyle.new
+        when :ini
+          INIStyle.new
+        when :json
+          JSONStyle.new
+        else
+          msg = "config style must be one of #{VALID_CONFIG_STYLES.join(', ')}"
+          raise ArgumentError, msg
+        end
+    end
+
+    # Return a Hash of the config files for app_name directories.  For
+    # applications that want to have more than one config file, a base name
+    # for the config file other than the app's name can be optionally
+    # provided.
     #
-    # Any root_prefix is pre-pended to file-based search locations environment, xdg and
-    # classic config paths so you can run this on a temporary directory set up for
-    # testing.
+    # If you want a command-line to override config values, you can supply one
+    # as either a String or a Hash to the ~command_line:~ keyword parameter.
+    # If given a String, it must use the long-option form with equal signs for
+    # options to be given a value.  If no equal sign and value are given, the
+    # option is assumed to be a boolean set to ~true~ unless the options
+    # starts with one of 'no', 'no-', or '!', in wich case the option is
+    # stripped of the negating prefix and the value is set to false.  If given
+    # a Hash, it will be used unaltered.
     #
+    # Finally, you can add a 'verbose: true' parameter to report the details
+    # of how the final Hash was formed on $stderr.
     def read(alt_base = app_name, command_line: {}, verbose: false)
       paths = config_paths(alt_base)
       sys_configs = paths[:system]

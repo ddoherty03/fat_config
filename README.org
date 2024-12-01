@@ -57,7 +57,7 @@ By default, ~FatConfig::Reader#read~ follows the [[https://specifications.freede
 With the optional ~:xdg~ keyword parameter to ~FatConfig::Reader#read~ set to
 ~false~, it will follow "classic" UNIX config file conventions.  There is no
 "standard" here, but there are some conventions, and the closest thing I can
-find to describe the conventions is this from the [[https://refspecs.linuxfoundation.org/FHS_3.0/fhs/ch03s08.html#homeReferences][UNIX File Heirarch Standard]]
+find to describe the conventions is this from the [[https://refspecs.linuxfoundation.org/FHS_3.0/fhs/ch03s08.html#homeReferences][UNIX File Hierarchy Standard]]
 website:
 
 #+begin_quote
@@ -100,7 +100,6 @@ website:
    or a ~String~.  If it is a ~String~, it is interpreted the same way as the
    environment variable ~MYAPP_OPTIONS~ just mentioned; if it is a ~Hash~, it
    is used directly and merged into the hash returned from the prior methods.
-
 
 ** Available Config File Styles
 
@@ -176,6 +175,81 @@ the ~:yaml~ style deserializes the following types:
   - Hash, NOT deserialized, returned as a String
   - Date and Time, NOT deserialized, returned as a String
 
+** Creating a Reader with 'FatConfig::Reader.new'
+When creating a ~Reader~, the ~#new~ method takes a mandatory argument that
+specifies the name of the application for which configuration files are to be
+sought.  It also takes a few optional keyword arguments:
+
+- ~style:~ specify a style for the config files other than YAML, the choices
+  are ~yaml~, ~toml~, ~json~, and ~ini~.  This can be given either as a String
+  or Symbol in any case.
+- ~xdg:~ either ~true~, to follow the XDG standard for where to find config
+  files, or ~false~, to follow classic UNIX conventions.
+- ~root_prefix:~, to locate the root of the file system somewhere other than
+  ~/~.  This is probably only useful in testing ~FatConfig~.
+
+#+begin_src ruby
+  require 'fat_config'
+
+  reader1 = FatConfig.new('labrat')  # Use XDG and YAML
+  reader2 = FatConfig.new('labrat', style: 'toml')  # Use XDG and TOML
+  reader3 = FatConfig.new('labrat', style: 'ini', xdg: false)  # Use classic UNIX and INI style
+#+end_src
+
+** Calling the ~#read~ method on a ~Reader~
+Once a ~Reader~ is created, you can get the completely merged configuration as
+a Hash by calling ~Reader#read~.  The ~read~ method can take several
+parameter:
+
+- alternative base :: as the first positional parameter, you can give an
+  alternative base name to use for the config files other than the app_name
+  given in the ~Reader.new~ constructor.  This is useful for applications that
+  may want to have more than one configuration sets.  If given, this name only
+  affects the base names of the config files, not the directory in which they
+  are to be sought: those always use the app name.
+- ~command_line:~ :: if you want a command-line to override config values, you
+  can supply one as either a String or a Hash to the ~command_line:~ keyword
+  parameter.  See below for how a String is parsed.
+- verbose: :: if you set ~verbose:~ true as a keyword argument, the ~read~
+  method will report details of how the configuration was built on ~$stdout~.
+
+** Parsing Strings as Config Settings in Environment Variables and Command Line
+The highest priority configs are those contained in the environment variable
+~MYAPP_OPTIONS~ or in any ~command-line:~ key-word parameter given to the
+~#read~ method.  In the case of the environment variable, the setting is
+always a String read from the environment and the ~command_line:~ key-word can
+be set to a String or a Hash.  When a Hash is provided, it is used unaltered
+as a config hash.  When a String is provided (and in the case of the
+environment variable), the string should be something like this:
+
+#+begin_example
+--hello-thing='hello, world' --gb=goodbye world --doit --the_num=3.14159 --the-date=2024-11-27 --no-bueno --~junk
+#+end_example
+
+And it is parsed into this Hash:
+
+#+begin_src ruby
+{:hello_thing=>"hello, world",
+ :gb=>"goodbye",
+ :doit=>true,
+ :the_num=>"3.14159",
+ :the_date=>"2024-11-27",
+ :bueno=>false,
+ :junk=>false}
+#+end_src
+
+Here are the parsing rules:
+
+1. An config is either an "option," of the form "--<option-name>=<value>" or a
+   "flag" of the form "--<flag-name>", everything else is ignored.
+2. All option values are returned as a String and are not deserialized into
+   Ruby objects,
+3. All flags are returned as a boolean ~true~ or ~false~.  If the flag name
+   starts with 'no', 'no-', 'no_', '!', or '~', it is set to ~false~ and the
+   option name has the negating prefix stripped; otherwise, it is set to
+   ~true~.
+4. These rules apply regardless of style being used for config files.
+
 * Installation
 
 Install the gem and add to the application's Gemfile by executing:
@@ -196,14 +270,21 @@ TODO: Write usage instructions here
 
 * Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+After checking out the repo, run `bin/setup` to install dependencies. Then,
+run `rake spec` to run the tests. You can also run `bin/console` for an
+interactive prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+To install this gem onto your local machine, run `bundle exec rake
+install`. To release a new version, update the version number in `version.rb`,
+and then run `bundle exec rake release`, which will create a git tag for the
+version, push git commits and the created tag, and push the `.gem` file to
+[[https://rubygems.org][rubygems.org]].
 
 * Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/ddoherty03/fat_config.
+Bug reports and pull requests are welcome on GitHub at
+https://github.com/ddoherty03/fat_config.
 
 * License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+The gem is available as open source under the terms of the [[https://opensource.org/licenses/MIT][MIT License]].
