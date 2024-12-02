@@ -4,7 +4,8 @@
 environment to populate a Hash of config settings.  You need only define a
 ~FatConfig::Reader~ and you can then call its #read method to look for, read,
 translate, and merge any config files into a single Hash that encapsulates all
-the files in the proper priority.
+the files in the proper priority.  It can be set to read ~YAML~, ~TOML~,
+~JSON~, or ~INI~ config files.
 
 * Usage:
 
@@ -177,7 +178,7 @@ the ~:yaml~ style deserializes the following types:
   - Hash, NOT deserialized, returned as a String
   - Date and Time, NOT deserialized, returned as a String
 
-** Creating a Reader with 'FatConfig::Reader.new'
+** Creating a Reader
 When creating a ~Reader~, the ~#new~ method takes a mandatory argument that
 specifies the name of the application for which configuration files are to be
 sought.  It also takes a few optional keyword arguments:
@@ -215,6 +216,22 @@ parameter:
 - verbose: :: if you set ~verbose:~ true as a keyword argument, the ~read~
   method will report details of how the configuration was built on ~$stdout~.
 
+  #+begin_src ruby
+    require 'fat_config'
+
+    reader = FatConfig::Reader.new('labrat')
+    reader.read  # YAML configs with basename 'labrat'; XDG conventions
+
+    # Now read another config set in directories named 'labrat' but with base
+    # names of 'labeldb'.  Overrride any setting named fog_psi with command-line
+    # value, and report config build on $stderr.
+    reader.read('labeldb', command_line: "--fog-psi=3.41mm", verbose: true)
+
+    # Similar with a Hash for the command-line
+    cl = { fog_psi: '3.41mm' }
+    reader.read('labeldb', command_line: cl, verbose: true)
+  #+end_src
+
 ** Parsing Strings as Config Settings in Environment Variables and Command Line
 The highest priority configs are those contained in the environment variable
 ~MYAPP_OPTIONS~ or in any ~command-line:~ key-word parameter given to the
@@ -231,25 +248,28 @@ environment variable), the string should be something like this:
 And it is parsed into this Hash:
 
 #+begin_src ruby
-{:hello_thing=>"hello, world",
- :gb=>"goodbye",
- :doit=>true,
- :the_num=>"3.14159",
- :the_date=>"2024-11-27",
- :bueno=>false,
- :junk=>false}
+  {
+    :hello_thing=>"hello, world",
+   :gb=>"goodbye",
+   :doit=>true,
+   :the_num=>"3.14159",
+   :the_date=>"2024-11-27",
+   :bueno=>false,
+   :junk=>false
+  }
 #+end_src
 
 Here are the parsing rules:
 
-1. An config is either an "option," of the form "--<option-name>=<value>" or a
-   "flag" of the form "--<flag-name>", everything else is ignored.
-2. All option values are returned as a String and are not deserialized into
+1. A config element is either an "option," of the form
+   "--<option-name>=<value>" or a "flag" of the form "--<flag-name>",
+   everything else is ignored.
+2. All option values are returned as String's and are not deserialized into
    Ruby objects,
 3. All flags are returned as a boolean ~true~ or ~false~.  If the flag name
-   starts with 'no', 'no-', 'no_', '!', or '~', it is set to ~false~ and the
+   starts with 'no', 'no-', 'no_', '!', or '~', it is set to =false= and the
    option name has the negating prefix stripped; otherwise, it is set to
-   ~true~.
+   =true=.
 4. These rules apply regardless of style being used for config files.
 
 * Installation
