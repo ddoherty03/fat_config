@@ -1,5 +1,11 @@
 module FatConfig
   RSpec.describe Hash do
+    it 'mehtodized keys' do
+      old = { 'first key': 1, second_key: 2, 'Third key': 3, 'fourth-key': 4, 'Fifth    Key': 5 }
+      new = old.methodize
+      expect(new.keys).to all match(/\A[a-z_][a-z0-9_]+/)
+    end
+
     it "reports changes in a merge" do
       old = { a: 1, b: 2, c: 3, d: 4, e: 5 }
       new = { d: 4, e: 8, f: 9, g: 11 }

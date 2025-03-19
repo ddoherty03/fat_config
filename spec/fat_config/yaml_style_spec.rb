@@ -67,9 +67,10 @@ module FatConfig
           YAML
         end
 
-        it 'all hash keys are symbols' do
+        it 'all hash keys are symbols suitable as identifiers' do
           hsh = YAMLStyle.new.load_string(yaml_str)
           expect(hsh.keys).to all be_a(Symbol)
+          expect(hsh.keys).to all match(/[a-z_][a-z0-9_]+/)
         end
 
         it 'can read a yaml string' do
