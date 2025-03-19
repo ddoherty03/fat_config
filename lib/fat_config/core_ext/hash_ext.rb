@@ -13,7 +13,7 @@ class Hash
         else
           v
         end
-      new_hash[k.to_s.tr('-', '_').to_sym] = new_val
+      new_hash[k.as_sym] = new_val
     end
     new_hash
   end
