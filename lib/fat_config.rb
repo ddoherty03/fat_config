@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'active_support/core_ext/hash'
+require 'fat_core/all'
 require 'fileutils'
 require 'psych'
 require 'tomlib'
