@@ -1,7 +1,9 @@
 require:
-  - rubocop-rspec
-  - rubocop-performance
   - rubocop-rake
+
+plugins:
+  - rubocop-performance
+  - rubocop-rspec
 
 inherit_gem:
     rubocop-shopify: rubocop.yml

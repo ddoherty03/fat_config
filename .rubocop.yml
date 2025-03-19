@@ -1,10 +1,5 @@
 inherit_from: ./rubocop-global.yml
 
-require:
-  - rubocop-rspec
-  - rubocop-rake
-  - rubocop-obsession
-
 AllCops:
   TargetRubyVersion: 3.3
   Include:
