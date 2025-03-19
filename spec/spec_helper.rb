@@ -23,7 +23,7 @@ module Helper
   end
 
   def sandbox_dir
-    File.join("/tmp", 'fat_config/sandbox')
+    File.expand_path(File.join(__dir__, "./tmp", 'sandbox'))
   end
 
   # Put contents in path relative to SANDBOX
