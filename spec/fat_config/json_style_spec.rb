@@ -52,6 +52,7 @@ module FatConfig
           JSON
         end
         let(:bad_json_str) do
+          # NOTE: end-quote missing in "xmas-fifth-day" value.
           <<~JSON
             {
                 "doe": "a deer, a female deer",
@@ -80,7 +81,7 @@ module FatConfig
         end
 
         it 'raises FatConfig::ParseError on a bad string' do
-          expect { JSONStyle.new.load_string(bad_json_str) }.to raise_error(/unexpected token/i)
+          expect { JSONStyle.new.load_string(bad_json_str) }.to raise_error FatConfig::ParseError
         end
 
         it 'raises FatConfig::ParseError on a bad file' do
@@ -88,7 +89,7 @@ module FatConfig
           expect {
             Reader.new('labrat', style: :json, root_prefix: sandbox_dir)
               .read(verbose: true)
-          }.to raise_error(/unexpected token/i)
+          }.to raise_error FatConfig::ParseError
         end
       end
 
