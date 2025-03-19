@@ -67,6 +67,11 @@ module FatConfig
           YAML
         end
 
+        it 'all hash keys are symbols' do
+          hsh = YAMLStyle.new.load_string(yaml_str)
+          expect(hsh.keys).to all be_a(Symbol)
+        end
+
         it 'can read a yaml string' do
           hsh = YAMLStyle.new.load_string(yaml_str)
           expect(hsh.keys).to include(:doe)

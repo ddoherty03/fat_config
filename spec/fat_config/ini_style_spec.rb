@@ -83,6 +83,11 @@ module FatConfig
           expect(hsh[:section1][:the_day]).to be_a String
         end
 
+        it 'all hash keys are symbols' do
+          hsh = INIStyle.new.load_string(ini_str)
+          expect(hsh.keys).to all be_a(Symbol)
+        end
+
         it 'raises FatConfig::ParseError on a bad string' do
           expect { INIStyle.new.load_string(bad_ini_str) }.to raise_error(/could not parse.*calling/i)
         end

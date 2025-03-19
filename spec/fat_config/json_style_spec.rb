@@ -80,6 +80,11 @@ module FatConfig
           expect(hsh[:xmas_fifth_day]).to be_a String
         end
 
+        it 'all hash keys are symbols' do
+          hsh = JSONStyle.new.load_string(json_str)
+          expect(hsh.keys).to all be_a(Symbol)
+        end
+
         it 'raises FatConfig::ParseError on a bad string' do
           expect { JSONStyle.new.load_string(bad_json_str) }.to raise_error FatConfig::ParseError
         end

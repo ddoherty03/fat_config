@@ -97,6 +97,11 @@ module FatConfig
           expect(hsh[:partridges][:count]).to be_an Integer
         end
 
+        it 'all hash keys are symbols' do
+          hsh = TOMLStyle.new.load_string(toml_str)
+          expect(hsh.keys).to all be_a(Symbol)
+        end
+
         it 'raises FatConfig::ParseError on a bad yaml string' do
           expect { TOMLStyle.new.load_string(bad_toml_str) }.to raise_error(/line 9: syntax/i)
         end
