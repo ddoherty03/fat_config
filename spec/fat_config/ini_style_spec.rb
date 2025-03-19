@@ -5,15 +5,6 @@ require 'spec_helper'
 module FatConfig
   RSpec.describe FatConfig do
     context "with INI Config Files" do
-      # Put contents in path relative to SANDBOX
-      def setup_test_file(path, content)
-        path = File.expand_path(path)
-        test_path = File.join(sandbox_dir, path)
-        dir_part = File.dirname(test_path)
-        FileUtils.mkdir_p(dir_part) unless Dir.exist?(dir_part)
-        File.write(test_path, content)
-      end
-
       before do
         # Save these, since they're not specific to this app.
         @xdg_config_dirs = ENV['XDG_CONFIG_DIRS']
