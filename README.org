@@ -1,5 +1,7 @@
 # FatConfig
 
+[[https://github.com/OWNER/REPOSITORY/actions/workflows/main.yml/badge.svg
+]]
 ~FatConfig~ eliminates the tedium of reading configuration files and the
 environment to populate a Hash of configuration settings.  You need only
 define a ~FatConfig::Reader~ and you can call its ~#read~ method to look for,
