@@ -1,15 +1,12 @@
-inherit_from: ./rubocop-global.yml
+inherit_gem:
+  rubocop-ddoherty: 'config/default.yml'
 
 AllCops:
-  TargetRubyVersion: 3.3
   Include:
     - 'lib/**/*'
-    - 'bin/**/*'
     - 'spec/**/*'
-#    - 'features/**/*'
   Exclude:
+    - 'test/tmp/**/*'
     - 'spec/tmp/**/*'
-    - 'spec/.examples.txt'
-    - 'bin/setup'
-    - '.simplecov'
-    - 'features/**/*'
+    - 'spec/.examples*'
+    - 'vendor/bundle/**/*'
