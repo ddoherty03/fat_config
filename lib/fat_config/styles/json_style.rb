@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatConfig
   class JSONStyle < Style
     def load_string(str)

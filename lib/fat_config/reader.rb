@@ -228,7 +228,7 @@ module FatConfig
     def find_classic_sys_config_files(base = app_name)
       configs = []
       env_config = ENV["#{app_name.upcase}_SYS_CONFIG"]
-      if env_config && File.readable?((config = File.join(root_prefix, File.expand_path(env_config))))
+      if env_config && File.readable?(config = File.join(root_prefix, File.expand_path(env_config)))
         configs = [config]
       elsif File.readable?(config = File.join(root_prefix, "/etc/#{base}"))
         configs = [config]
@@ -251,7 +251,7 @@ module FatConfig
     # given.
     def find_classic_user_config_file(base = app_name)
       env_config = ENV["#{app_name.upcase}_CONFIG"]
-      if env_config && File.readable?((config = File.join(root_prefix, File.expand_path(env_config))))
+      if env_config && File.readable?(config = File.join(root_prefix, File.expand_path(env_config)))
         config
       else
         config_dir = File.join(root_prefix, File.expand_path("~/"))

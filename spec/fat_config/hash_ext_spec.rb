@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatConfig
   RSpec.describe Hash do
     it 'mehtodized keys' do

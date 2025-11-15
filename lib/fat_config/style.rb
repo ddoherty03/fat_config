@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatConfig
   # This class acts as a super class for specific styles of config files.  The
   # subclass must provide a load_file method that takes a file name, reads it
