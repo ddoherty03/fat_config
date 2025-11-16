@@ -307,7 +307,7 @@ And it is parsed into this Hash:
 
 #+begin_src ruby
   {
-    :hello_thing=>"hello, world",
+   :hello_thing=>"hello, world",
    :gb=>"goodbye",
    :doit=>true,
    :the_num=>"3.14159",
@@ -319,9 +319,9 @@ And it is parsed into this Hash:
 
 Here are the parsing rules:
 
-1. A config element is either an "option," of the form
-   "~--<option-name>=<value>~" or a "flag" of the form "~--<flag-name>~",
-   everything else is ignored.
+1. A config element is either of the following, everything else is ignored.
+   a. an "option," of the form "~--<option-name>=<value>~" or
+   b. a "flag" of the form "~--<flag-name>~"
 2. All option values are returned as String's and are not deserialized into
    Ruby objects,
 3. All flags are returned as a boolean ~true~ or ~false~.  If the flag name
