@@ -3,12 +3,22 @@
 [[https://github.com/ddoherty03/fat_config/actions/workflows/main.yml][https://github.com/ddoherty03/fat_config/actions/workflows/main.yml/badge.svg?branch=master]]
 
 * Summary
+Allowing a user to configure an application to change its behavior at runtime
+can be seen as constructing a ruby ~Hash~ that merges settings from a variety
+of sources in a hierarchical fashion: first from system-wide file settings,
+merged with user-level file settings, merged with environment variable
+settings, merged with command-line parameters.  Constructing this Hash, while
+needed by nearly any command-line app, can be a tedious chore, especially when
+there are standards, such as the XDG standards and Unix tradition, that may or
+may not be followed.
+
 ~FatConfig~ eliminates the tedium of reading configuration files and the
 environment to populate a Hash of configuration settings.  You need only
-define a ~FatConfig::Reader~ and you can call its ~#read~ method to look for,
-read, translate, and merge any config files into a single Hash that
-encapsulates all the files in the proper priority.  It can be set to read
-~YAML~, ~TOML~, ~JSON~, or ~INI~ config files.
+define a ~FatConfig::Reader~ and call its ~#read~ method to look for, read,
+translate, and merge any config files into a single Hash that encapsulates all
+the files in the proper priority.  It can be set to read ~YAML~, ~TOML~,
+~JSON~, or ~INI~ config files.
+
 
 * Table of Contents                                                   :toc_4:
 - [[#summary][Summary]]
@@ -72,20 +82,20 @@ from the following locations, from lowest priority to highest:
    treated as listed in order of precedence, so the first-listed directory
    will be given priority over later ones.  All such directories will be read,
    and any config file found will be merged into the resulting Hash, but they
-   will be visited in reverse order so that the first-named directories
+   will be visited in reverse order so that the earlier-named directories
    override the earlier ones.
 3. If the environment variable ~MYAPP_CONFIG~ is set to a file name, it will
    look in that file any user-level config file.
 4. If the environment variable ~MYAPP_CONFIG~ is NOT set, it will read any
    user-level config file from ~$HOME/.config/myapp~ or, if the
    ~XDG_CONFIG_HOME~ environment variable is set to an alternative directory,
-   it will look ~XDG_CONFIG_HOME/.config~ for a config directory called
+   it will look in ~XDG_CONFIG_HOME/.config~ for a config directory called
    'myapp'.  Note that in this case, ~XDG_CONFIG_HOME~ is intended to contain
    the name of a single directory, not a list of directories as with the
    system-level config files.
 5. It will then merge in any options set in the environment variable
    ~MYAPP_OPTIONS~, overriding any conflicting settings gotten from reading
-   the system- and user-level file.  It will interpret the String from the
+   the system- and user-level files.  It will interpret the String from the
    environment variable as discussed below in [[*Parsing Environment and Command Line Strings][Parsing Environment and Command
    Line Strings]].
 6. Finally, it will merge in any options given in the optional ~command_line:~
