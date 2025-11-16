@@ -96,12 +96,12 @@ from the following locations, from lowest priority to highest:
 5. It will then merge in any options set in the environment variable
    ~MYAPP_OPTIONS~, overriding any conflicting settings gotten from reading
    the system- and user-level files.  It will interpret the String from the
-   environment variable as discussed below in [[*Parsing Environment and Command Line Strings][Parsing Environment and Command
+   environment variable as discussed below in [[#parsing-environment-and-command-line-strings][Parsing Environment and Command
    Line Strings]].
 6. Finally, it will merge in any options given in the optional ~command_line:~
    named parameter to the ~#read~ method.  That parameter can either be a
    ~Hash~ or a ~String~.  If it is a ~String~, it is interpreted the same way
-   as the environment variable ~MYAPP_OPTIONS~ as explained below in [[*Parsing Environment and Command Line Strings][Parsing
+   as the environment variable ~MYAPP_OPTIONS~ as explained below in [[#parsing-environment-and-command-line-strings][Parsing
    Environment and Command Line Strings]]; if it is a ~Hash~, it is used
    directly and merged into the hash returned from the prior methods.
 
@@ -285,6 +285,10 @@ parameter:
   #+end_src
 
 ** Parsing Environment and Command Line Strings
+:PROPERTIES:
+:CUSTOM_ID: parsing-environment-and-command-line-strings
+:END:
+
 The highest priority configs are those contained in the environment variable
 or in any ~command-line:~ key-word parameter given to the ~#read~ method.  In
 the case of the environment variable, the setting is always a String read from
@@ -316,7 +320,7 @@ And it is parsed into this Hash:
 Here are the parsing rules:
 
 1. A config element is either an "option," of the form
-   "--<option-name>=<value>" or a "flag" of the form "--<flag-name>",
+   "~--<option-name>=<value>~" or a "flag" of the form "~--<flag-name>~",
    everything else is ignored.
 2. All option values are returned as String's and are not deserialized into
    Ruby objects,
