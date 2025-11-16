@@ -1,7 +1,7 @@
 # FatConfig
 
-[[https://github.com/ddoherty03/fat_config/actions/workflows/main.yml/badge.svg
-]]
+[[https://github.com/ddoherty03/fat_config/actions/workflows/main.yml][https://github.com/ddoherty03/fat_config/actions/workflows/main.yml/badge.svg?branch=master]]
+
 * Summary
 ~FatConfig~ eliminates the tedium of reading configuration files and the
 environment to populate a Hash of configuration settings.  You need only
@@ -9,6 +9,26 @@ define a ~FatConfig::Reader~ and you can call its ~#read~ method to look for,
 read, translate, and merge any config files into a single Hash that
 encapsulates all the files in the proper priority.  It can be set to read
 ~YAML~, ~TOML~, ~JSON~, or ~INI~ config files.
+
+* Table of Contents                                                   :toc_4:
+- [[#summary][Summary]]
+- [[#installation][Installation]]
+- [[#usage][Usage:]]
+  - [[#following-xdg-standards][Following XDG Standards]]
+  - [[#following-classic-unix-standards][Following Classic UNIX Standards]]
+  - [[#available-config-file-styles][Available Config File Styles]]
+  - [[#hash-keys][Hash Keys]]
+  - [[#hash-values][Hash Values]]
+    - [[#yaml][YAML]]
+    - [[#toml][TOML]]
+    - [[#json][JSON]]
+    - [[#ini][INI]]
+  - [[#creating-a-reader][Creating a Reader]]
+  - [[#calling-the-read-method-on-a-reader][Calling the ~#read~ method on a ~Reader~]]
+  - [[#parsing-environment-and-command-line-strings][Parsing Environment and Command Line Strings]]
+- [[#development][Development]]
+- [[#contributing][Contributing]]
+- [[#license][License]]
 
 * Installation
 
