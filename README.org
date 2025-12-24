@@ -25,7 +25,7 @@ the files in the proper priority.  It can be set to read ~YAML~, ~TOML~,
 ~JSON~, or ~INI~ config files.
 
 
-* Table of Contents                                                   :toc_4:
+* Table of Contents                                          :toc_4:noexport:
 - [[#introduction][Introduction]]
 - [[#installation][Installation]]
 - [[#usage][Usage:]]
