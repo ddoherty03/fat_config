@@ -1,8 +1,13 @@
-# FatConfig
+#+TITLE: FatConfig
+#+PROPERTY: header-args:ruby :results value :colnames no :hlines yes :exports both :dir "./"
+#+PROPERTY: header-args:ruby+ :wrap example :session fat_config_session :eval yes
+#+PROPERTY: header-args:ruby+ :prologue "$:.unshift('./lib') unless $:.first == './lib'; require 'fat_config'"
+#+PROPERTY: header-args:sh :exports code :eval no
+#+PROPERTY: header-args:bash :exports code :eval no
 
 [[https://github.com/ddoherty03/fat_config/actions/workflows/main.yml][https://github.com/ddoherty03/fat_config/actions/workflows/main.yml/badge.svg?branch=master]]
 
-* Summary
+* Introduction
 Allowing a user to configure an application to change its behavior at runtime
 can be seen as constructing a ruby ~Hash~ that merges settings from a variety
 of sources in a hierarchical fashion: first from system-wide file settings,
@@ -21,7 +26,7 @@ the files in the proper priority.  It can be set to read ~YAML~, ~TOML~,
 
 
 * Table of Contents                                                   :toc_4:
-- [[#summary][Summary]]
+- [[#introduction][Introduction]]
 - [[#installation][Installation]]
 - [[#usage][Usage:]]
   - [[#following-xdg-standards][Following XDG Standards]]
@@ -34,7 +39,7 @@ the files in the proper priority.  It can be set to read ~YAML~, ~TOML~,
     - [[#json][JSON]]
     - [[#ini][INI]]
   - [[#creating-a-reader][Creating a Reader]]
-  - [[#calling-the-read-method-on-a-reader][Calling the ~#read~ method on a ~Reader~]]
+  - [[#calling-the-read-method-on-a-reader][Calling the ~read~ method on a ~Reader~]]
   - [[#parsing-environment-and-command-line-strings][Parsing Environment and Command Line Strings]]
 - [[#development][Development]]
 - [[#contributing][Contributing]]
@@ -62,6 +67,10 @@ If bundler is not being used to manage dependencies, install the gem by executin
   reader = FatConfig::Reader.new('myapp')
   config = reader.read
 #+end_src
+
+#+RESULTS:
+#+begin_example
+#+end_example
 
 The ~reader.read~ method will parse the config files (by default assumed to be
 YAML files), config environment variable, and optional command-line parameters
@@ -243,18 +252,16 @@ sought.  It also takes a few optional keyword arguments:
 - ~root_prefix:~, to locate the root of the file system somewhere other than
   ~/~.  This is probably only useful in testing ~FatConfig~.
 
-#+begin_src ruby
-  require 'fat_config'
-
+#+begin_src ruby :eval no
   reader1 = FatConfig.new('labrat')  # Use XDG and YAML
   reader2 = FatConfig.new('labrat', style: 'toml')  # Use XDG and TOML
   reader3 = FatConfig.new('labrat', style: 'ini', xdg: false)  # Use classic UNIX and INI style
 #+end_src
 
-** Calling the ~#read~ method on a ~Reader~
+** Calling the ~read~ method on a ~Reader~
 Once a ~Reader~ is created, you can get the completely merged configuration as
 a Hash by calling ~Reader#read~.  The ~read~ method can take several
-parameter:
+parameters:
 
 - ~alternative base~ :: as the first positional parameter, you can give an
   alternative base name to use for the config files other than the app_name
@@ -268,9 +275,7 @@ parameter:
 - ~verbose:~ :: if you set ~verbose:~ true as a keyword argument, the ~read~
   method will report details of how the configuration was built on ~$stderr~.
 
-  #+begin_src ruby
-    require 'fat_config'
-
+  #+begin_src ruby :eval no
     reader = FatConfig::Reader.new('labrat')
     reader.read  # YAML configs with basename 'labrat'; XDG conventions
 
@@ -305,7 +310,7 @@ should be something like this:
 
 And it is parsed into this Hash:
 
-#+begin_src ruby
+#+begin_src ruby :eval no
   {
    :hello_thing=>"hello, world",
    :gb=>"goodbye",
