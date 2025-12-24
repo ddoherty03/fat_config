@@ -53,6 +53,9 @@ GEM
       damerau-levenshtein
       ostruct
       stringio (>= 3.1.2)
+    gem_docs (0.2.0)
+      rake
+      yard
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
     inifile (3.0.0)
@@ -140,6 +143,7 @@ GEM
       unicode-emoji (~> 4.1)
     unicode-emoji (4.1.0)
     uri (1.0.3)
+    yard (0.9.38)
 
 PLATFORMS
   ruby
@@ -148,6 +152,7 @@ PLATFORMS
 DEPENDENCIES
   debug
   fat_config!
+  gem_docs (>= 0.2.0)
   pry
   rake (~> 13.0)
   rspec (~> 3.0)
