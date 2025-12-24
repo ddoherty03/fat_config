@@ -1,58 +1,35 @@
-- [Summary](#org09a9002)
-- [Table of Contents](#org34fbd6a)
-- [Installation](#org9fb4562)
-- [Usage:](#org780dc59)
-  - [Following XDG Standards](#orgc1c2948)
-  - [Following Classic UNIX Standards](#org934829f)
-  - [Available Config File Styles](#org0831b65)
-  - [Hash Keys](#orge4aac69)
-  - [Hash Values](#org142f762)
-    - [YAML](#org0283e2c)
-    - [TOML](#orge30bce4)
-    - [JSON](#org265b53f)
-    - [INI](#org8cb0126)
-  - [Creating a Reader](#org9382341)
-  - [Calling the `read` method on a `Reader`](#org7567982)
+- [Introduction](#org1f0d9bd)
+- [Installation](#org3f8a5fd)
+- [Usage:](#org5c5fe0f)
+  - [Following XDG Standards](#org7e6640a)
+  - [Following Classic UNIX Standards](#orgbc610e8)
+  - [Available Config File Styles](#orgacf5ac1)
+  - [Hash Keys](#orgf87b1a5)
+  - [Hash Values](#org451482b)
+    - [YAML](#orgef8563a)
+    - [TOML](#orgcf8804e)
+    - [JSON](#org549e838)
+    - [INI](#org12513cc)
+  - [Creating a Reader](#org7a0f2a9)
+  - [Calling the `read` method on a `Reader`](#org7e439f9)
   - [Parsing Environment and Command Line Strings](#parsing-environment-and-command-line-strings)
-- [Development](#orgd7c6084)
-- [Contributing](#orgf937a13)
-- [License](#orga6d60af)
+- [Development](#org1fdfa48)
+- [Contributing](#org4454a76)
+- [License](#org8a2eaa6)
 
 [![img](https://github.com/ddoherty03/fat_config/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/ddoherty03/fat_config/actions/workflows/main.yml)
 
 
-<a id="org09a9002"></a>
+<a id="org1f0d9bd"></a>
 
-# Summary
+# Introduction
 
 Allowing a user to configure an application to change its behavior at runtime can be seen as constructing a ruby `Hash` that merges settings from a variety of sources in a hierarchical fashion: first from system-wide file settings, merged with user-level file settings, merged with environment variable settings, merged with command-line parameters. Constructing this Hash, while needed by nearly any command-line app, can be a tedious chore, especially when there are standards, such as the XDG standards and Unix tradition, that may or may not be followed.
 
 `FatConfig` eliminates the tedium of reading configuration files and the environment to populate a Hash of configuration settings. You need only define a `FatConfig::Reader` and call its `#read` method to look for, read, translate, and merge any config files into a single Hash that encapsulates all the files in the proper priority. It can be set to read `YAML`, `TOML`, `JSON`, or `INI` config files.
 
 
-<a id="org34fbd6a"></a>
-
-# Table of Contents     :toc_4:
-
--   
--   
--   -   
-    -   
-    -   
-    -   
-    -   -   
-        -   
-        -   
-        -
-    -   
-    -   
-    -   [Parsing Environment and Command Line Strings](#parsing-environment-and-command-line-strings)
--   
--   
--   
-
-
-<a id="org9fb4562"></a>
+<a id="org3f8a5fd"></a>
 
 # Installation
 
@@ -69,7 +46,7 @@ gem install fat_config
 ```
 
 
-<a id="org780dc59"></a>
+<a id="org5c5fe0f"></a>
 
 # Usage:
 
@@ -87,7 +64,7 @@ config = reader.read
 The `reader.read` method will parse the config files (by default assumed to be YAML files), config environment variable, and optional command-line parameters and return the composite config as a Hash.
 
 
-<a id="orgc1c2948"></a>
+<a id="org7e6640a"></a>
 
 ## Following XDG Standards
 
@@ -101,7 +78,7 @@ By default, `FatConfig::Reader#read` follows the [XDG Desktop Standards](https:/
 6.  Finally, it will merge in any options given in the optional `command_line:` named parameter to the `#read` method. That parameter can either be a `Hash` or a `String`. If it is a `String`, it is interpreted the same way as the environment variable `MYAPP_OPTIONS` as explained below in [Parsing Environment and Command Line Strings](#parsing-environment-and-command-line-strings); if it is a `Hash`, it is used directly and merged into the hash returned from the prior methods.
 
 
-<a id="org934829f"></a>
+<a id="orgbc610e8"></a>
 
 ## Following Classic UNIX Standards
 
@@ -124,7 +101,7 @@ With the optional `:xdg` keyword parameter to `FatConfig::Reader#read` set to `f
 6.  Finally, it will merge in any options given in the optional `command_line:` named parameter to the `#read` method. That parameter can either be a `Hash` or a `String`. If it is a `String`, it will interpret the string as explained below in [Parsing Environment and Command Line Strings](#parsing-environment-and-command-line-strings); if it is a `Hash`, it is used directly and merged into the hash returned from the prior methods.
 
 
-<a id="org0831b65"></a>
+<a id="orgacf5ac1"></a>
 
 ## Available Config File Styles
 
@@ -138,21 +115,21 @@ With the optional `:xdg` keyword parameter to `FatConfig::Reader#read` set to `f
 By default, the style is `yaml`. Note that the style only pertains to the syntax of on-disk configuration files. Configuration can also be set by an environment variable, `MYAPP_OPTIONS` and by a command-line string optionally provided to the `#read` method. Those are simple parsers that parse strings of option settings as explained below. See, [Parsing Environment and Command Line Strings](#parsing-environment-and-command-line-strings).
 
 
-<a id="orge4aac69"></a>
+<a id="orgf87b1a5"></a>
 
 ## Hash Keys
 
 The returned Hash will have symbols as keys, using the names given in the config files, except that they will have any hyphens converted to the underscore. Thus the config setting "page-width: 6.5in" in a config file will result in a Hash entry of `{ page_width: '6.5in' }`.
 
 
-<a id="org142f762"></a>
+<a id="org451482b"></a>
 
 ## Hash Values
 
 Whether the values of the returned Hash will be 'deserialized' into a Ruby object is controlled by the style of the configuration files. For example, the `:yaml` style deserializes the following types:
 
 
-<a id="org0283e2c"></a>
+<a id="orgef8563a"></a>
 
 ### YAML
 
@@ -167,7 +144,7 @@ Whether the values of the returned Hash will be 'deserialized' into a Ruby objec
 -   Date, DateTime, and Time, which FatConfig adds to the foregoing default types deserialized by the default YAML library.
 
 
-<a id="orge30bce4"></a>
+<a id="orgcf8804e"></a>
 
 ### TOML
 
@@ -181,7 +158,7 @@ Whether the values of the returned Hash will be 'deserialized' into a Ruby objec
 -   Date and Time, when given in ISO form YYYY-MM-DD or YYYY-MM-DDThh:mm:ss
 
 
-<a id="org265b53f"></a>
+<a id="org549e838"></a>
 
 ### JSON
 
@@ -195,7 +172,7 @@ Whether the values of the returned Hash will be 'deserialized' into a Ruby objec
 -   Date and Time, NOT deserialized, returns a parse error
 
 
-<a id="org8cb0126"></a>
+<a id="org12513cc"></a>
 
 ### INI
 
@@ -209,7 +186,7 @@ Whether the values of the returned Hash will be 'deserialized' into a Ruby objec
 -   Date and Time, NOT deserialized, returned as a String
 
 
-<a id="org9382341"></a>
+<a id="org7a0f2a9"></a>
 
 ## Creating a Reader
 
@@ -220,31 +197,23 @@ When creating a `Reader`, the `#new` method takes a mandatory argument that spec
 -   `root_prefix:`, to locate the root of the file system somewhere other than `/`. This is probably only useful in testing `FatConfig`.
 
 ```ruby
-require 'fat_config'
-
 reader1 = FatConfig.new('labrat')  # Use XDG and YAML
 reader2 = FatConfig.new('labrat', style: 'toml')  # Use XDG and TOML
 reader3 = FatConfig.new('labrat', style: 'ini', xdg: false)  # Use classic UNIX and INI style
 ```
 
-```
-false
-```
 
-
-<a id="org7567982"></a>
+<a id="org7e439f9"></a>
 
 ## Calling the `read` method on a `Reader`
 
-Once a `Reader` is created, you can get the completely merged configuration as a Hash by calling `Reader#read`. The `read` method can take several parameter:
+Once a `Reader` is created, you can get the completely merged configuration as a Hash by calling `Reader#read`. The `read` method can take several parameters:
 
 -   **`alternative base`:** as the first positional parameter, you can give an alternative base name to use for the config files other than the app\_name given in the `Reader.new` constructor. This is useful for applications that may want to have more than one set of configuration files. If given, this name only affects the base names of the config files, not the directory in which they are to be sought: those always use the app name.
 -   **`command_line:`:** if you want a command-line to override config values, you can supply one as either a String or a Hash to the `command_line:` keyword parameter. See below for how a String is parsed.
 -   **`verbose:`:** if you set `verbose:` true as a keyword argument, the `read` method will report details of how the configuration was built on `$stderr`.
     
     ```ruby
-    require 'fat_config'
-    
     reader = FatConfig::Reader.new('labrat')
     reader.read  # YAML configs with basename 'labrat'; XDG conventions
     
@@ -256,10 +225,6 @@ Once a `Reader` is created, you can get the completely merged configuration as a
     # Similar with a Hash for the command-line
     cl = { fog_psi: '3.41mm' }
     reader.read('labeldb', command_line: cl, verbose: true)
-    ```
-    
-    ```
-    | dymo30327: | (page_width: 25mm page_height: 87mm rows: 1 columns: 1 top_page_margin: 0mm bottom_page_margin: 0mm left_page_margin: 5mm right_page_margin: 5mm top_pad: 1mm bottom_pad: 1mm left_pad: 1mm right_pad: 1mm landscape: true printer: dymo) | duraready1034d: | (label: dymo30327 page_width: 23mm page_height: 88mm) | avery5160: | (page_width: 8.5in page_height: 11in rows: 10 columns: 3 top_page_margin: 13mm bottom_page_margin: 12mm left_page_margin: 5mm right_page_margin: 5mm row_gap: 0mm column_gap: 3mm landscape: false) | avery15660: | (label: avery5160) | avery15700: | (label: avery5160) | avery15960: | (label: avery5160) | avery16460: | (label: avery5160) | avery16790: | (label: avery5160) | avery18160: | (label: avery5160) | avery18260: | (label: avery5160) | avery18660: | (label: avery5160) | avery22837: | (label: avery5160) | avery28660: | (label: avery5160) | avery32660: | (label: avery5160) | avery38260: | (label: avery5160) | avery45160: | (label: avery5160) | avery48160: | (label: avery5160) | avery48260: | (label: avery5160) | avery48360: | (label: avery5160) | avery48460: | (label: avery5160) | avery48860: | (label: avery5160) | avery48960: | (label: avery5160) | avery5136: | (label: avery5160) | avery5260: | (label: avery5160) | avery55160: | (label: avery5160) | avery5520: | (label: avery5160) | avery55360: | (label: avery5160) | avery5620: | (label: avery5160) | avery5630: | (label: avery5160) | avery5660: | (label: avery5160) | avery58160: | (label: avery5160) | avery58660: | (label: avery5160) | avery5960: | (label: avery5160) | avery6240: | (label: avery5160) | avery6521: | (label: avery5160) | avery6525: | (label: avery5160) | avery6526: | (label: avery5160) | avery6585: | (label: avery5160) | avery75160: | (label: avery5160) | avery80509: | (label: avery5160) | avery8160: | (label: avery5160) | avery8215: | (label: avery5160) | avery8250: | (label: avery5160) | avery8460: | (label: avery5160) | avery85560: | (label: avery5160) | avery8620: | (label: avery5160) | avery8660: | (label: avery5160) | avery88560: | (label: avery5160) | avery8860: | (label: avery5160) | avery8920: | (label: avery5160) | avery95520: | (label: avery5160) | avery95915: | (label: avery5160) | presta94200: | (label: avery5160) | avery5163: | (page_width: 8.5in page_height: 11in rows: 5 columns: 2 top_page_margin: 12mm bottom_page_margin: 13mm left_page_margin: 4mm right_page_margin: 4mm row_gap: 0mm column_gap: 5mm landscape: false) | avery15513: | (label: avery5163) | avery15702: | (label: avery5163) | avery16791: | (label: avery5163) | avery18163: | (label: avery5163) | avery18863: | (label: avery5163) | avery38363: | (label: avery5163) | avery38863: | (label: avery5163) | avery48163: | (label: avery5163) | avery48263: | (label: avery5163) | avery48363: | (label: avery5163) | avery48463: | (label: avery5163) | avery48863: | (label: avery5163) | avery5137: | (label: avery5163) | avery5263: | (label: avery5163) | avery55163: | (label: avery5163) | avery5523: | (label: avery5163) | avery55463: | (label: avery5163) | avery58163: | (label: avery5163) | avery5963: | (label: avery5163) | avery6427: | (label: avery5163) | avery6527: | (label: avery5163) | avery6528: | (label: avery5163) | avery8163: | (label: avery5163) | avery8253: | (label: avery5163) | avery8363: | (label: avery5163) | avery8463: | (label: avery5163) | avery85563: | (label: avery5163) | avery8563: | (label: avery5163) | avery8923: | (label: avery5163) | avery95523: | (label: avery5163) | avery95910: | (label: avery5163) | avery95945: | (label: avery5163) | avery5366: | (page_width: 8.5in page_height: 11in rows: 15 columns: 2 top_page_margin: 12mm bottom_page_margin: 13mm left_page_margin: 13.5mm right_page_margin: 13.5mm row_gap: 0mm column_gap: 14.5mm landscape: false) | avery45366: | (label: avery5366) | avery48266: | (label: avery5366) | avery48366: | (label: avery5366) | avery5029: | (label: avery5366) | avery5566: | (label: avery5366) | avery6505: | (label: avery5366) | avery75366: | (label: avery5366) | avery8066: | (label: avery5366) | avery8366: | (label: avery5366) | avery8478: | (label: avery5366) | avery8590: | (label: avery5366) | avery8593: | (label: avery5366) | presta94210: | (label: avery5366) | avery5164: | (page_width: 8.5in page_height: 11in rows: 3 columns: 2 top_page_margin: 12.5mm bottom_page_margin: 13mm left_page_margin: 4mm right_page_margin: 4mm row_gap: 0mm column_gap: 5mm landscape: false) | avery15264: | (label: avery5164) | avery45464: | (label: avery5164) | avery48264: | (label: avery5164) | avery48464: | (label: avery5164) | avery48864: | (label: avery5164) | avery5264: | (label: avery5164) | avery55164: | (label: avery5164) | avery5524: | (label: avery5164) | avery55464: | (label: avery5164) | avery58164: | (label: avery5164) | avery6436: | (label: avery5164) | avery8164: | (label: avery5164) | avery8254: | (label: avery5164) | avery8464: | (label: avery5164) | avery8564: | (label: avery5164) | avery95905: | (label: avery5164) | avery95940: | (label: avery5164) | avery5195: | (page_width: 8.5in page_height: 11in rows: 15 columns: 4 top_page_margin: 14mm bottom_page_margin: 14mm left_page_margin: 7.5mm right_page_margin: 8mm row_gap: 0mm column_gap: 7.7mm landscape: false) | avery15695: | (label: avery5195) | avery18195: | (label: avery5195) | avery18294: | (label: avery5195) | avery18695: | (label: avery5195) | avery38667: | (label: avery5195) | avery42895: | (label: avery5195) | avery48335: | (label: avery5195) | avery5155: | (label: avery5195) | avery6430: | (label: avery5195) | avery6520: | (label: avery5195) | avery6523: | (label: avery5195) | avery6524: | (label: avery5195) | avery8195: | (label: avery5195) | avery88695: | (label: avery5195) | presta94208: | (label: avery5195) | avery5167: | (page_width: 8.5in page_height: 11in rows: 20 columns: 4 top_page_margin: 12mm bottom_page_margin: 13mm left_page_margin: 7.5mm right_page_margin: 8mm row_gap: 0mm column_gap: 7.45mm landscape: false) | avery15667: | (label: avery5167) | avery18167: | (label: avery5167) | avery18667: | (label: avery5167) | avery48267: | (label: avery5167) | avery48467: | (label: avery5167) | avery48867: | (label: avery5167) | avery5267: | (label: avery5167) | avery5667: | (label: avery5167) | avery5967: | (label: avery5167) | avery8167: | (label: avery5167) | avery8667: | (label: avery5167) | avery8867: | (label: avery5167) | avery8927: | (label: avery5167) | avery95667: | (label: avery5167) | presta36445: | (label: avery5167) | presta36446: | (label: avery5167) | presta36447: | (label: avery5167) | presta36448: | (label: avery5167) | presta36449: | (label: avery5167) | presta36504: | (label: avery5167) | presta36505: | (label: avery5167) | presta36506: | (label: avery5167) | presta36507: | (label: avery5167) | presta36508: | (label: avery5167) | presta36544: | (label: avery5167) | presta36545: | (label: avery5167) | presta36546: | (label: avery5167) | presta36547: | (label: avery5167) | presta36548: | (label: avery5167) | presta94203: | (label: avery5167) | avery5162: | (page_width: 8.5in page_height: 11in rows: 7 columns: 2 top_page_margin: 21mm bottom_page_margin: 21.5mm left_page_margin: 3.7mm right_page_margin: 5mm row_gap: 0mm column_gap: 5mm landscape: false) | avery18262: | (label: avery5162) | avery48462: | (label: avery5162) | avery48862: | (label: avery5162) | avery5262: | (label: avery5162) | avery5522: | (label: avery5162) | avery5654: | (label: avery5162) | avery5962: | (label: avery5162) | avery6445: | (label: avery5162) | avery6455: | (label: avery5162) | avery8162: | (label: avery5162) | avery8252: | (label: avery5162) | avery8462: | (label: avery5162) | avery95522: | (label: avery5162) | presta94206: | (label: avery5162) | avery5161: | (page_width: 8.5in page_height: 11in rows: 10 columns: 2 top_page_margin: 12mm bottom_page_margin: 13mm left_page_margin: 4.5mm right_page_margin: 4mm row_gap: 0mm column_gap: 5mm landscape: false) | avery5261: | (label: avery5161) | avery5961: | (label: avery5161) | avery8161: | (label: avery5161) | avery8461: | (label: avery5161) | presta36450: | (label: avery5161) | presta36451: | (label: avery5161) | presta36452: | (label: avery5161) | presta36453: | (label: avery5161) | presta36454: | (label: avery5161) | presta36509: | (label: avery5161) | presta36510: | (label: avery5161) | presta36511: | (label: avery5161) | presta36512: | (label: avery5161) | presta36513: | (label: avery5161) | presta36549: | (label: avery5161) | presta36550: | (label: avery5161) | presta36551: | (label: avery5161) | presta36552: | (label: avery5161) | presta36553: | (label: avery5161) | presta94202: | (label: avery5161) | avery5266: | (page_width: 8.5in page_height: 11in rows: 15 columns: 2 top_page_margin: 12.5mm bottom_page_margin: 13mm left_page_margin: 13mm right_page_margin: 14mm row_gap: 0mm column_gap: 14mm landscape: false) | avery5066: | (label: avery5266) | avery5166: | (label: avery5266) | avery5666: | (label: avery5266) | avery5766: | (label: avery5266) | avery5866: | (label: avery5266) | avery5966: | (label: avery5266) | avery6466: | (label: avery5266) | avery6500: | (label: avery5266) | avery5168: | (page_width: 8.5in page_height: 11in rows: 2 columns: 2 top_page_margin: 13mm bottom_page_margin: 13mm left_page_margin: 13mm right_page_margin: 13mm row_gap: 0mm column_gap: 12.5mm landscape: false) | avery27950: | (label: avery5168) | avery8168: | (label: avery5168) | avery95935: | (label: avery5168) | avery5126: | (page_width: 8.5in page_height: 11in rows: 2 columns: 1 top_page_margin: 1mm bottom_page_margin: 1mm left_page_margin: 1mm right_page_margin: 1mm row_gap: 0mm column_gap: 0mm landscape: false) | avery15516: | (label: avery5126) | avery18126: | (label: avery5126) | avery48126: | (label: avery5126) | avery5138: | (label: avery5126) | avery5526: | (label: avery5126) | avery5912: | (label: avery5126) | avery5917: | (label: avery5126) | avery6440: | (label: avery5126) | avery8126: | (label: avery5126) | avery8426: | (label: avery5126) | avery95526: | (label: avery5126) | avery95900: | (label: avery5126) | avery95930: | (label: avery5126) | avery5815: | (page_width: 8.5in page_height: 11in rows: 4 columns: 2 top_page_margin: 13mm bottom_page_margin: 12mm left_page_margin: 4.5mm right_page_margin: 4mm row_gap: 0mm column_gap: 4mm landscape: false) | avery5816: | (label: avery5815) | avery5817: | (label: avery5815) | avery5821: | (label: avery5815) | avery5165: | (page_width: 8.5in page_height: 11in rows: 1 columns: 1 top_page_margin: 0mm bottom_page_margin: 0mm left_page_margin: 0mm right_page_margin: 0mm row_gap: 0mm column_gap: 0mm landscape: false) | avery15265: | (label: avery5165) | avery15665: | (label: avery5165) | avery18665: | (label: avery5165) | avery48165: | (label: avery5165) | avery5265: | (label: avery5165) | avery5353: | (label: avery5165) | avery64506: | (label: avery5165) | avery8165: | (label: avery5165) | avery8255: | (label: avery5165) | avery8465: | (label: avery5165) | avery8665: | (label: avery5165) | avery95920: | (label: avery5165) | avery18663: | (page_width: 8.5in page_height: 11in rows: 5 columns: 2 top_page_margin: 13mm bottom_page_margin: 12mm left_page_margin: 5mm right_page_margin: 5mm row_gap: 0mm column_gap: 3mm landscape: false) | avery15663: | (label: avery18663) | avery5663: | (label: avery18663) | avery6522: | (label: avery18663) | avery7663: | (label: avery18663) | avery8663: | (label: avery18663) | avery5360: | (page_width: 8.5in page_height: 11in rows: 7 columns: 3 top_page_margin: 5.5mm bottom_page_margin: 7mm left_page_margin: 1mm right_page_margin: 1mm row_gap: 0mm column_gap: 0mm landscape: false) | avery45008: | (label: avery5360) | avery8987: | (page_width: 8.5in page_height: 11in rows: 10 columns: 3 top_page_margin: 15mm bottom_page_margin: 16mm left_page_margin: 10mm right_page_margin: 10mm row_gap: 6.3mm column_gap: 13mm landscape: false) | avery8986: | (label: avery8987) | avery18662: | (page_width: 8.5in page_height: 11in rows: 7 columns: 2 top_page_margin: 20.4mm bottom_page_margin: 21.8mm left_page_margin: 5mm right_page_margin: 5mm row_gap: 0mm column_gap: 3mm landscape: false) | avery15662: | (label: avery18662) | avery5662: | (label: avery18662) | avery8662: | (label: avery18662) | avery88662: | (label: avery18662) | avery95662: | (label: avery18662) | avery11124: | (page_width: 8.5in page_height: 11in rows: 20 columns: 2 top_page_margin: 13mm bottom_page_margin: 13mm left_page_margin: 70mm right_page_margin: 70mm row_gap: 0mm column_gap: 0mm landscape: false) | ff: | (label: dymo30327 font_style: bold delta_y: 4mm) | dividers: | (label: avery11124 delta_y: 0mm copies: 2 printer: bro) | fog_psi: | 3.41mm |
     ```
 
 
@@ -289,10 +254,6 @@ And it is parsed into this Hash:
 }
 ```
 
-```
-false
-```
-
 Here are the parsing rules:
 
 1.  A config element is either of the following, everything else is ignored:
@@ -305,7 +266,7 @@ Here are the parsing rules:
 4.  These rules apply regardless of style being used for config files.
 
 
-<a id="orgd7c6084"></a>
+<a id="org1fdfa48"></a>
 
 # Development
 
@@ -314,14 +275,14 @@ After checking out the repo, run \`bin/setup\` to install dependencies. Then, ru
 To install this gem onto your local machine, run \`bundle exec rake install\`. To release a new version, update the version number in \`version.rb\`, and then run \`bundle exec rake release\`, which will create a git tag for the version, push git commits and the created tag, and push the \`.gem\` file to [rubygems.org](https://rubygems.org).
 
 
-<a id="orgf937a13"></a>
+<a id="org4454a76"></a>
 
 # Contributing
 
 Bug reports and pull requests are welcome on GitHub at <https://github.com/ddoherty03/fat_config>.
 
 
-<a id="orga6d60af"></a>
+<a id="org8a2eaa6"></a>
 
 # License
 
