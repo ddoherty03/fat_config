@@ -20,14 +20,14 @@ Gem::Specification.new do |spec|
     configs.
 
   DESC
-  spec.homepage = "https://git.ddoherty.net/fat_config"
+  spec.homepage = "https://github.com/ddoherty.net/fat_config"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.0.0"
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
 
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://git.ddoherty.net/fat_config"
+  spec.metadata["source_code_uri"] = "https://github.com/ddoherty.net/fat_config"
   # spec.metadata["changelog_uri"] = "TODO: Put your gem's CHANGELOG.md URL here."
 
   # Specify which files should be added to the gem when it is released.
