@@ -47,7 +47,27 @@ module FatConfig
                     "count": 1,
                     "location": "a pear tree"
                 },
-                "turtle-doves": "two"
+             "tmux": {
+                 "map": {
+                      "555": {
+                          "key": "left",
+                          "meta": true
+                      },
+                      "570": {
+                          "key": "right",
+                          "meta": true
+                      },
+                      "557": {
+                         "key": "left",
+                         "ctrl": true
+                      },
+                      "572": {
+                          "key": "right",
+                          "ctrl": true
+                      }
+                  }
+              },
+              "turtle-doves": "two"
             }
           JSON
         end
@@ -76,6 +96,9 @@ module FatConfig
           hsh = JSONStyle.new.load_string(json_str)
           expect(hsh.keys).to include(:doe)
           expect(hsh.keys).to include(:french_hens)
+          expect(hsh.keys).to include(:tmux)
+          expect(hsh[:tmux][:map][:'557'][:key]).to eq "left"
+          expect(hsh[:tmux]).to be_an Hash
           expect(hsh[:calling_birds]).to be_an Array
           expect(hsh[:xmas_fifth_day]).to be_a String
         end

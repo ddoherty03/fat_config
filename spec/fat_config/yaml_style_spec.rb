@@ -44,6 +44,20 @@ module FatConfig
             the-moment: 2024-12-25T06:30:15
             xmas-fifth-day: 2024-12-30
             french-hens: 3
+            tmux:
+              map:
+                555:
+                  key: left
+                  meta: true
+                570:
+                  key: right
+                  meta: true
+                557:
+                  key: left
+                  ctrl: true
+                572:
+                  key: right
+                  ctrl: true
             golden-rings: 5
             partridges:
               count: 1
@@ -79,6 +93,8 @@ module FatConfig
           expect(hsh.keys).to include(:french_hens)
           expect(hsh[:calling_birds]).to be_an Array
           expect(hsh[:xmas_fifth_day]).to be_a Date
+          expect(hsh[:french_hens]).to be_an Integer
+          expect(hsh[:tmux][:map].keys).to all(be_an Integer)
           expect(hsh[:pi]).to be_a Float
           expect(hsh[:pi]).to eq(3.14159)
           expect(hsh[:lying]).to be_a TrueClass

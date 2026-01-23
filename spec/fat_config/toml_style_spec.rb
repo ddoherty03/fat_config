@@ -51,6 +51,19 @@ module FatConfig
             the-day = 2024-12-25
             the-moment = 2024-12-25T06:30:15
 
+            [tmux.map.555]
+            key = "left"
+            meta = true
+            [tmux.map.570]
+            key = "right"
+            meta = true
+            [tmux.map.557]
+            key = "left"
+            ctrl = true
+            [tmux.map.572]
+            key = "right"
+            ctrl = true
+
             [partridges]
             count = 1
             location = "a pear tree"
