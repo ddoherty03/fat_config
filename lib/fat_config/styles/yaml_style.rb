@@ -19,8 +19,8 @@ module FatConfig
   # - Array
   # - Hash
   #
-  # Recursive data structures are not allowed by default.  Arbitrary classes
-  # can be allowed by adding those classes to the permitted_classes
+  # Recursive data structures are not allowed by Psych by default.  Arbitrary
+  # classes can be allowed by adding those classes to the permitted_classes
   # keyword argument.  They are additive.  For example, to allow Date
   # deserialization:
   #
@@ -29,7 +29,7 @@ module FatConfig
     def load_string(str)
       Psych.safe_load(
         str,
-        symbolize_names: true,
+        symbolize_names: false,
         permitted_classes: [Date, DateTime, Time],
       )&.methodize || {}
     rescue Psych::SyntaxError => ex
@@ -39,7 +39,7 @@ module FatConfig
     def load_file(file_name)
       Psych.safe_load_file(
         file_name,
-        symbolize_names: true,
+        symbolize_names: false,
         permitted_classes: [Date, DateTime, Time],
       )&.methodize || {}
     rescue Psych::SyntaxError => ex
