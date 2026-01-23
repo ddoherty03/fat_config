@@ -66,6 +66,27 @@ module FatConfig
           YAML
         end
 
+        let(:yaml_array_str) do
+          <<~YAML
+            ---
+            - key: left
+              meta: true
+              action: backward_word
+
+            - key: right
+              meta: true
+              action: forward_word
+
+            - key: space
+              context: paging
+              action: page_down
+
+            - key: backspace
+              context: paging
+              action: page_up
+          YAML
+        end
+
         let(:bad_yaml_str) do
           <<~YAML
             doe: "a deer, a female deer"
@@ -110,6 +131,18 @@ module FatConfig
           expect(hsh[:the_moment]).to be_a Time
           expect(hsh[:partridges][:count]).to be_an Integer
           expect(hsh[:turtle_doves]).to be_a String
+        end
+
+        it 'can read a top-level Array from YAML' do
+          arr = YAMLStyle.new.load_string(yaml_array_str)
+          expect(arr).to be_an(Array)
+          expect(arr).to all(be_a(Hash))
+          arr.each do |h|
+            expect(h.keys).to all(be_a(Symbol))
+          end
+          expect(arr.last[:key]).to eq("backspace")
+          expect(arr.last[:context]).to eq("paging")
+          expect(arr.last[:action]).to eq("page_up")
         end
 
         it 'raises FatConfig::ParseError on a bad yaml string' do
