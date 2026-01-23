@@ -17,7 +17,7 @@ class Hash
         # used as a method call.
         new_hash[k.to_s.as_sym] = v.kind_of?(Hash) ? v.methodize : v
       else
-        new_hash[k] = v.methodize
+        new_hash[k] = v.kind_of?(Hash) ? v.methodize : v
       end
     end
     new_hash
