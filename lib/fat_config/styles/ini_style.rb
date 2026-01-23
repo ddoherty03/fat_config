@@ -13,7 +13,17 @@ module FatConfig
     end
 
     def load_file(file_name)
-      IniFile.load(file_name).to_h.methodize
+      ini = IniFile.load(file_name)
+      config = {}
+      ini.each_section do |sec|
+        case ini[sec]
+        when Hash
+          config[sec.to_sym] = ini[sec].methodize
+        else
+          config[sec.to_sym] = ini[sec]
+        end
+      end
+      config
     rescue IniFile::Error => ex
       raise FatConfig::ParseError, ex.to_s
     end
