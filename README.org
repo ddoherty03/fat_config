@@ -181,18 +181,21 @@ of option settings as explained below.  See, [[*Parsing Environment and Command 
 Line Strings]].
 
 ** Hash Keys
-The returned Hash will have symbols as keys, using the names given in the
-config files, except that they will have any hyphens converted to the
-underscore.  Thus the config setting "page-width: 6.5in" in a config file will
-result in a Hash entry of ~{ page_width: '6.5in' }~.
+Any keys that are Strings will be converted to a symbol, using the names given
+in the config files, except that they will have any hyphens converted to the
+underscore so they are suitable for use as a method call.  Thus the config
+setting "page-width: 6.5in" in a config file will result in a Hash entry of ~{
+page_width: '6.5in' }~.
+
+Keys that are not Strings will be left alone, so that, for example, you might
+have Integer keys, which may be useful below the top level.
 
 ** Hash Values
 Whether the values of the returned Hash will be 'deserialized' into a Ruby
-object is controlled by the style of the configuration files.  For example,
-the ~:yaml~ style deserializes the following types:
+object is controlled by the style of the configuration files.
 
 *** YAML
-
+The ~:yaml~ style deserializes the following types:
   - TrueClass (the string 'true' of whatever case)
   - FalseClass (the string 'false' of whatever case)
   - NilClass (when no value given)
@@ -205,7 +208,7 @@ the ~:yaml~ style deserializes the following types:
     types deserialized by the default YAML library.
 
 *** TOML
-
+The ~:toml~ style deserializes the following types:
   - TrueClass (exactly the string 'true')
   - FalseClass (exactly the string 'false')
   - Integer (when it looks like an whole number or 0x... or 0o... hex or octal)
@@ -216,7 +219,7 @@ the ~:yaml~ style deserializes the following types:
   - Date and Time, when given in ISO form YYYY-MM-DD or YYYY-MM-DDThh:mm:ss
 
 *** JSON
-
+The ~:json~ style deserializes the following types:
   - TrueClass (exactly the string 'true')
   - FalseClass (exactly the string 'false')
   - Integer (when it looks like an decimal whole number, but NO provision hex
@@ -228,7 +231,7 @@ the ~:yaml~ style deserializes the following types:
   - Date and Time, NOT deserialized, returns a parse error
 
 *** INI
-
+The ~:ini~ style deserializes the following types:
   - TrueClass (exactly the string 'true')
   - FalseClass (exactly the string 'false')
   - Integer (when it looks like an whole number or 0x... or 0o... hex or octal)
