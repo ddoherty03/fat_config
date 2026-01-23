@@ -2,7 +2,7 @@
 
 module FatConfig
   RSpec.describe Hash do
-    it 'mehtodized keys' do
+    it 'methodizes keys' do
       old = { 'first key': 1, second_key: 2, 'Third key': 3, 'fourth-key': 4, 'Fifth    Key': 5 }
       new = old.methodize
       expect(new.keys).to all match(/\A[a-z_][a-z0-9_]+/)

@@ -1,19 +1,23 @@
 # frozen_string_literal: true
 
 class Hash
-  # Transform hash keys to symbols suitable for calling as methods, i.e.,
-  # translate any hyphens to underscores.  This is the form we want to keep
-  # config hashes in Labrat.
+  # Transform top-level hash keys to symbols suitable for calling as methods,
+  # i.e., translate any hyphens to underscores.  This is the form we want to
+  # keep config hashes in Labrat.
   def methodize
     new_hash = {}
     each_pair do |k, v|
-      new_val =
-        if v.is_a?(Hash)
-          v.methodize
-        else
-          v
-        end
-      new_hash[k.as_sym] = new_val
+      case k
+      when String
+        new_hash[k.as_sym] = v
+      when Symbol
+        # In case the key is a Symbol like :"a key-for-me", convert it back to
+        # a String, then let #as_sym convert it to a proper Symbol that can be
+        # used as a method call.
+        new_hash[k.to_s.as_sym] = v
+      else
+        new_hash[k] = v
+      end
     end
     new_hash
   end
