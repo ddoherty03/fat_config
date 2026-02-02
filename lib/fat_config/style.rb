@@ -31,11 +31,10 @@ module FatConfig
         file_hash = load_file(f)
         next unless file_hash
 
-        if file_hash.is_a?(Hash)
-          file_hash = file_hash.methodize
-        else
-          raise "Error loading file #{f}:\n#{File.read(f)[0..500]}"
+        unless file_hash.is_a?(Hash)
+          raise FatConfig::ParseError, "Error loading file #{f}:\n#{File.read(f)[0..500]}"
         end
+
         if verbose
           warn "Merging system config from file '#{f}':" if sys_files.include?(f)
           warn "Merging user config from file '#{f}':" if usr_files.include?(f)

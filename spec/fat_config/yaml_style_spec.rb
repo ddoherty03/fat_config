@@ -58,6 +58,13 @@ module FatConfig
                 572:
                   key: right
                   ctrl: true
+            log:
+              file: "~/log/test.log"
+              level: debug
+              tags:
+                - keycode
+                - keybind
+                - action
             golden-rings: 5
             partridges:
               count: 1
@@ -116,6 +123,11 @@ module FatConfig
           expect(hsh[:xmas_fifth_day]).to be_a Date
           expect(hsh[:french_hens]).to be_an Integer
           expect(hsh[:tmux][:map].keys).to all(be_an Integer)
+          expect(hsh[:log]).to be_a(Hash)
+          expect(hsh[:log][:file]).to be_a(String)
+          expect(hsh[:log][:file]).to match(/log.*test/)
+          expect(hsh[:log][:tags]).to be_an(Array)
+          expect(hsh[:log][:tags]).to include('keybind')
           expect(hsh[:pi]).to be_a Float
           expect(hsh[:pi]).to eq(3.14159)
           expect(hsh[:lying]).to be_a TrueClass
@@ -134,7 +146,7 @@ module FatConfig
         end
 
         it 'can read a top-level Array from YAML' do
-          arr = YAMLStyle.new.load_string(yaml_array_str)
+          arr = YAMLStyle.new.load_string(yaml_array_str)[:config]
           expect(arr).to be_an(Array)
           expect(arr).to all(be_a(Hash))
           arr.each do |h|
