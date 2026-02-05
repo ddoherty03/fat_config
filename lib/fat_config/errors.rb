@@ -15,39 +15,26 @@ module FatConfig
     end
 
     def self.snippet_from_string(str, line:, column:)
-      snippet = nil
-
+      line = line&.to_i || 1
+      column = column&.to_i || 0
       if str && line && line.to_i > 0
-        lines = str.lines
-        idx = line.to_i - 1
-        if idx >= 0 && idx < lines.length
-          src = lines[idx].chomp
-          caret =
-            if column
-              (" " * column.to_i) + "^"
-            end
-          snippet = [src, caret].compact.join("\n")
-        end
+        lines = str.lines.map(&:chomp)
+        (lines[0..line - 1] +
+          [(' ' * column) + '^'] +
+          lines[line..]).join("\n")
       end
-
-      snippet
     end
 
     def self.snippet_from_file(file_name, line:, column:)
       text = nil
-
       begin
         text = File.read(file_name, encoding: "UTF-8")
       rescue StandardError
         text = nil
       end
-
-      snippet = nil
       if text
-        snippet = snippet_from_string(text, line: line, column: column)
+        snippet_from_string(text, line: line, column: column)
       end
-
-      snippet
     end
 
     private
@@ -61,17 +48,17 @@ module FatConfig
         else
           ""
         end
-
-      msg = +"#{format.to_s.upcase} parse error in #{file}#{loc}: #{problem}"
-
+      msg = +"#{format.to_s.upcase} parse error in:\n  #{file}\n  #{loc}:\n\nERROR:#{problem}"
       if snippet && !snippet.empty?
-        msg << "\n\n#{snippet}"
+        msg << "\n\n===========================\n"
+        msg << snippet
+        msg << "\n===========================\n\n"
       end
-
       if context && !context.empty?
-        msg << "\n\n#{context}"
+        msg << "\n\n==========================="
+        msg << context
+        msg << "===========================\n\n"
       end
-
       msg
     end
   end
