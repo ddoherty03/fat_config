@@ -41,7 +41,19 @@ module FatConfig
         {}
       end
     rescue Psych::SyntaxError => ex
-      raise FatConfig::ParseError, ex.to_s
+      snippet = ParseError.snippet_from_string(str, line: ex.line, column: ex.column)
+      raise(
+        ParseError.new(
+          file: "string",
+          format: :yaml,
+          line: ex.line,
+          column: ex.column,
+          problem: ex.problem,
+          context: ex.context,
+          snippet: snippet,
+        ),
+        cause: ex,
+      )
     end
 
     def load_file(file_name)
@@ -60,7 +72,19 @@ module FatConfig
         {}
       end
     rescue Psych::SyntaxError => ex
-      raise FatConfig::ParseError, ex.to_s
+      snippet = ParseError.snippet_from_file(file_name, line: ex.line, column: ex.column)
+      raise(
+        ParseError.new(
+          file: file_name,
+          format: :yaml,
+          line: ex.line,
+          column: ex.column,
+          problem: ex.problem,
+          context: ex.context,
+          snippet: snippet,
+        ),
+        cause: ex,
+      )
     end
 
     def possible_extensions
