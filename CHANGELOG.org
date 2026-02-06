@@ -1,0 +1,13 @@
+* COMMENT CHANGELOG tips:
+1. Don't dump your git change logs into this file, write them yourself.
+2. Keep entries short and user-focused,
+3. Use non-technical language, but do speak in the vocabulary of your gem.
+4. Don't document changes only of interest to the programmers, just those the
+   user would find useful.
+5. Give each heading a version number and an inactive date (C-c ! is useful here).
+
+* Version 0.7.1 [2026-02-06 Fri]
+- Improved error diagnostics on ParseError
+
+* Version 0.7.0 [2026-02-05 Thu]
+- Parsing error dignostics added

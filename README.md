@@ -1,26 +1,26 @@
-- [Introduction](#org6ea1400)
-- [Installation](#org0bfc9c4)
-- [Usage:](#orgb03325f)
-  - [Following XDG Standards](#orgcc49e5b)
-  - [Following Classic UNIX Standards](#orgb094a10)
-  - [Available Config File Styles](#org77efd19)
-  - [Hash Keys](#org2489659)
-  - [Hash Values](#org3c327fd)
-    - [YAML](#org47246cf)
-    - [TOML](#orgcd934bb)
-    - [JSON](#orge3c0568)
-    - [INI](#org479cf72)
-  - [Creating a Reader](#org195ed64)
-  - [Calling the `read` method on a `Reader`](#org0c26613)
+- [Introduction](#orgc4b482f)
+- [Installation](#orgbce0696)
+- [Usage:](#org7684da4)
+  - [Following XDG Standards](#orga8e28a3)
+  - [Following Classic UNIX Standards](#orgd716a45)
+  - [Available Config File Styles](#org152041e)
+  - [Hash Keys](#orgb744014)
+  - [Hash Values](#org02d5c86)
+    - [YAML](#org73fadf6)
+    - [TOML](#orge78f21a)
+    - [JSON](#org22479cd)
+    - [INI](#org850bdf4)
+  - [Creating a Reader](#org570f7c5)
+  - [Calling the `read` method on a `Reader`](#org9637e7b)
   - [Parsing Environment and Command Line Strings](#parsing-environment-and-command-line-strings)
-- [Development](#orgadf9605)
-- [Contributing](#org00f8770)
-- [License](#orgbb61eac)
+- [Development](#orgda3ea75)
+- [Contributing](#orgfb56ba2)
+- [License](#org0377369)
 
 [![img](https://github.com/ddoherty03/fat_config/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/ddoherty03/fat_config/actions/workflows/main.yml)
 
 
-<a id="org6ea1400"></a>
+<a id="orgc4b482f"></a>
 
 # Introduction
 
@@ -29,7 +29,7 @@ Allowing a user to configure an application to change its behavior at runtime ca
 `FatConfig` eliminates the tedium of reading configuration files and the environment to populate a Hash of configuration settings. You need only define a `FatConfig::Reader` and call its `#read` method to look for, read, translate, and merge any config files into a single Hash that encapsulates all the files in the proper priority. It can be set to read `YAML`, `TOML`, `JSON`, or `INI` config files.
 
 
-<a id="org0bfc9c4"></a>
+<a id="orgbce0696"></a>
 
 # Installation
 
@@ -46,7 +46,7 @@ gem install fat_config
 ```
 
 
-<a id="orgb03325f"></a>
+<a id="org7684da4"></a>
 
 # Usage:
 
@@ -64,7 +64,7 @@ config = reader.read
 The `reader.read` method will parse the config files (by default assumed to be YAML files), config environment variable, and optional command-line parameters and return the composite config as a Hash.
 
 
-<a id="orgcc49e5b"></a>
+<a id="orga8e28a3"></a>
 
 ## Following XDG Standards
 
@@ -78,7 +78,7 @@ By default, `FatConfig::Reader#read` follows the [XDG Desktop Standards](https:/
 6.  Finally, it will merge in any options given in the optional `command_line:` named parameter to the `#read` method. That parameter can either be a `Hash` or a `String`. If it is a `String`, it is interpreted the same way as the environment variable `MYAPP_OPTIONS` as explained below in [Parsing Environment and Command Line Strings](#parsing-environment-and-command-line-strings); if it is a `Hash`, it is used directly and merged into the hash returned from the prior methods.
 
 
-<a id="orgb094a10"></a>
+<a id="orgd716a45"></a>
 
 ## Following Classic UNIX Standards
 
@@ -101,7 +101,7 @@ With the optional `:xdg` keyword parameter to `FatConfig::Reader#read` set to `f
 6.  Finally, it will merge in any options given in the optional `command_line:` named parameter to the `#read` method. That parameter can either be a `Hash` or a `String`. If it is a `String`, it will interpret the string as explained below in [Parsing Environment and Command Line Strings](#parsing-environment-and-command-line-strings); if it is a `Hash`, it is used directly and merged into the hash returned from the prior methods.
 
 
-<a id="org77efd19"></a>
+<a id="org152041e"></a>
 
 ## Available Config File Styles
 
@@ -115,7 +115,7 @@ With the optional `:xdg` keyword parameter to `FatConfig::Reader#read` set to `f
 By default, the style is `yaml`. Note that the style only pertains to the syntax of on-disk configuration files. Configuration can also be set by an environment variable, `MYAPP_OPTIONS` and by a command-line string optionally provided to the `#read` method. Those are simple parsers that parse strings of option settings as explained below. See, [Parsing Environment and Command Line Strings](#parsing-environment-and-command-line-strings).
 
 
-<a id="org2489659"></a>
+<a id="orgb744014"></a>
 
 ## Hash Keys
 
@@ -124,14 +124,14 @@ Any keys that are Strings will be converted to a symbol, using the names given i
 Keys that are not Strings will be left alone, so that, for example, you might have Integer keys, which may be useful below the top level.
 
 
-<a id="org3c327fd"></a>
+<a id="org02d5c86"></a>
 
 ## Hash Values
 
 Whether the values of the returned Hash will be 'deserialized' into a Ruby object is controlled by the style of the configuration files.
 
 
-<a id="org47246cf"></a>
+<a id="org73fadf6"></a>
 
 ### YAML
 
@@ -148,7 +148,7 @@ The `:yaml` style deserializes the following types:
 -   Date, DateTime, and Time, which FatConfig adds to the foregoing default types deserialized by the default YAML library.
 
 
-<a id="orgcd934bb"></a>
+<a id="orge78f21a"></a>
 
 ### TOML
 
@@ -164,7 +164,7 @@ The `:toml` style deserializes the following types:
 -   Date and Time, when given in ISO form YYYY-MM-DD or YYYY-MM-DDThh:mm:ss
 
 
-<a id="orge3c0568"></a>
+<a id="org22479cd"></a>
 
 ### JSON
 
@@ -180,7 +180,7 @@ The `:json` style deserializes the following types:
 -   Date and Time, NOT deserialized, returns a parse error
 
 
-<a id="org479cf72"></a>
+<a id="org850bdf4"></a>
 
 ### INI
 
@@ -196,7 +196,7 @@ The `:ini` style deserializes the following types:
 -   Date and Time, NOT deserialized, returned as a String
 
 
-<a id="org195ed64"></a>
+<a id="org570f7c5"></a>
 
 ## Creating a Reader
 
@@ -213,7 +213,7 @@ reader3 = FatConfig.new('labrat', style: 'ini', xdg: false)  # Use classic UNIX 
 ```
 
 
-<a id="org0c26613"></a>
+<a id="org9637e7b"></a>
 
 ## Calling the `read` method on a `Reader`
 
@@ -276,7 +276,7 @@ Here are the parsing rules:
 4.  These rules apply regardless of style being used for config files.
 
 
-<a id="orgadf9605"></a>
+<a id="orgda3ea75"></a>
 
 # Development
 
@@ -285,14 +285,14 @@ After checking out the repo, run \`bin/setup\` to install dependencies. Then, ru
 To install this gem onto your local machine, run \`bundle exec rake install\`. To release a new version, update the version number in \`version.rb\`, and then run \`bundle exec rake release\`, which will create a git tag for the version, push git commits and the created tag, and push the \`.gem\` file to [rubygems.org](https://rubygems.org).
 
 
-<a id="org00f8770"></a>
+<a id="orgfb56ba2"></a>
 
 # Contributing
 
 Bug reports and pull requests are welcome on GitHub at <https://github.com/ddoherty03/fat_config>.
 
 
-<a id="orgbb61eac"></a>
+<a id="org0377369"></a>
 
 # License
 
