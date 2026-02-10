@@ -12,8 +12,9 @@ module FatConfig
     # - ~xdg~ :: whether follow XDG desktop conventions, by default true; if
     #   false, use "classic" UNIX config practices with /etc/ and ~/.baserc.
     # - ~root_prefix~ :: an alternate root of the assumed file system, by
-    #   default ''.  This facilitated testing.
+    #   default ''.  This facilitates testing.
     attr_reader :app_name, :style, :root_prefix, :xdg
+    attr_reader :user_dir, :sys_dir
 
     # Config file may be located in either the xdg locations (containing any
     # variant of base: base, base.yml, or base.yaml) or in the classic
@@ -38,7 +39,7 @@ module FatConfig
     #    b. Then, either:
     #       A. The file pointed to by the environment variable APPNAME_SYS_CONFIG or
     #       B. System classic config files,
-    def initialize(app_name, style: :yaml, xdg: true, root_prefix: '')
+    def initialize(app_name, style: :yaml, xdg: true, root_prefix: '', user_dir: nil, sys_dir: nil)
       @app_name = app_name.strip.downcase
       raise ArgumentError, "reader app name may not be blank" if @app_name.blank?
 
@@ -63,6 +64,10 @@ module FatConfig
           msg = "config style must be one of #{VALID_CONFIG_STYLES.join(', ')}"
           raise ArgumentError, msg
         end
+      # Optional override of directories instead of locating them by XDG or
+      # classical conventions.
+      @user_dir = user_dir
+      @sys_dir = sys_dir
     end
 
     # Return a Hash of the config files for app_name directories.  For
@@ -102,6 +107,50 @@ module FatConfig
       merge_command_line(result, command_line, verbose: verbose)
     end
 
+    # Return a Hash of Arrays with the outer Hash having the key system:
+    # pointing to an Array of system paths and the key :user pointing to an
+    # Array of user paths.
+    #
+    # @param base [String] base name to use for finding config paths
+    # @param user_dir [String] optional override of directory with user config files
+    # @param sys_dir [String] optional override of directory with system config files
+    def config_paths(base = app_name)
+      sys_configs = []
+      sys_env_name = "#{app_name.upcase}_SYS_CONFIG"
+      if sys_dir
+        sys_configs = find_config_files_in_dir(base, sys_dir)
+      elsif ENV[sys_env_name]
+        sys_fname = File.join(root_prefix, File.expand_path(ENV[sys_env_name]))
+        sys_configs << sys_fname if File.readable?(sys_fname)
+      else
+        sys_configs +=
+          if xdg
+            find_xdg_sys_config_files(base)
+          else
+            find_classic_sys_config_files(base)
+          end
+      end
+
+      usr_configs = []
+      usr_env_name = "#{app_name.upcase}_CONFIG"
+      if user_dir
+        usr_configs = find_config_files_in_dir(base, user_dir)
+      elsif ENV[usr_env_name]
+        usr_fname = File.join(root_prefix, File.expand_path(ENV[usr_env_name]))
+        usr_configs << usr_fname if File.readable?(usr_fname)
+      else
+        usr_configs <<
+          if xdg
+            find_xdg_user_config_file(base)
+          else
+            find_classic_user_config_file(base)
+          end
+      end
+      { system: sys_configs.compact, user: usr_configs.compact }
+    end
+
+    private
+
     def merge_environment(start_hash, verbose: false)
       return start_hash if ENV[env_name].blank?
 
@@ -138,35 +187,25 @@ module FatConfig
       "#{app_name.upcase}_OPTIONS"
     end
 
-    def config_paths(base = app_name)
-      sys_configs = []
-      sys_env_name = "#{app_name.upcase}_SYS_CONFIG"
-      if ENV[sys_env_name]
-        sys_fname = File.join(root_prefix, File.expand_path(ENV[sys_env_name]))
-        sys_configs << sys_fname if File.readable?(sys_fname)
-      else
-        sys_configs +=
-          if xdg
-            find_xdg_sys_config_files(base)
-          else
-            find_classic_sys_config_files(base)
-          end
-      end
+    ########################################################################
+    # Explicit config files
+    ########################################################################
 
-      usr_configs = []
-      usr_env_name = "#{app_name.upcase}_CONFIG"
-      if ENV[usr_env_name]
-        usr_fname = File.join(root_prefix, File.expand_path(ENV[usr_env_name]))
-        usr_configs << usr_fname if File.readable?(usr_fname)
-      else
-        usr_configs <<
-          if xdg
-            find_xdg_user_config_file(base)
-          else
-            find_classic_user_config_file(base)
-          end
+    # Return a list of readable config files with basename base for the
+    # current style in directory dir.
+    #
+    # @param base [String] base name of config file
+    # @param dir [String] directory to search for config giles
+    def find_config_files_in_dir(base, dir)
+      configs = []
+      dir = File.expand_path(dir)
+      base_candidates = style.dir_constrained_base_names(base)
+      base_candidates.each do |f|
+        if File.readable?(File.join(dir, f))
+          configs << File.join(dir, f)
+        end
       end
-      { system: sys_configs.compact, user: usr_configs.compact }
+      configs
     end
 
     ########################################################################
@@ -181,9 +220,9 @@ module FatConfig
     # $XDG_CONFIG_DIRS (default: "/etc/xdg"): precedence-ordered set of system configuration directories.
 
     # Return the absolute path names of all XDG system config files for
-    # app_name with the basename variants of base. Return the lowest priority
-    # files first, highest last. Prefix the search locations with dir_prefix
-    # if given.
+    # app_name in the current style with the basename variants of base. Return
+    # the lowest priority files first, highest last. Prefix the search
+    # locations with dir_prefix if given.
     def find_xdg_sys_config_files(base = app_name)
       configs = []
       xdg_search_dirs = ENV['XDG_CONFIG_DIRS']&.split(':')&.reverse || ['/etc/xdg']
@@ -198,16 +237,16 @@ module FatConfig
     end
 
     # Return the absolute path name of any XDG user config files for app_name
-    # with the basename variants of base. The XDG_CONFIG_HOME environment
-    # variable for the user configs is intended to be the name of a single xdg
-    # config directory, not a list of colon-separated directories as for the
-    # system config. Return the name of a config file for this app in
-    # XDG_CONFIG_HOME (or ~/.config by default).  Prefix the search location
-    # with dir_prefix if given.
+    # in the current style with the basename variants of base. The
+    # XDG_CONFIG_HOME environment variable for the user configs is intended to
+    # be the name of a single xdg config directory, not a list of
+    # colon-separated directories as for the system config. Return the name of
+    # a config file for this app in XDG_CONFIG_HOME (or ~/.config by default).
+    # Prefix the search location with dir_prefix if given.
     def find_xdg_user_config_file(base = app_name)
       xdg_search_dir = ENV['XDG_CONFIG_HOME'] || ['~/.config']
       dir = File.expand_path(File.join(xdg_search_dir, app_name))
-      dir = File.join(root_prefix, dir) unless root_prefix.strip.empty?
+      dir = File.join(root_prefix, dir) unless root_prefix.to_s.strip.empty?
       return unless Dir.exist?(dir)
 
       base_candidates = style.dir_constrained_base_names(base)
@@ -222,9 +261,9 @@ module FatConfig
     ########################################################################
 
     # Return the absolute path names of all "classic" system config files for
-    # app_name with the basename variants of base. Return the lowest priority
-    # files first, highest last.  Prefix the search locations with dir_prefix
-    # if given.
+    # app_name in the current style with the basename variants of base. Return
+    # the lowest priority files first, highest last.  Prefix the search
+    # locations with dir_prefix if given.
     def find_classic_sys_config_files(base = app_name)
       configs = []
       env_config = ENV["#{app_name.upcase}_SYS_CONFIG"]
@@ -246,9 +285,9 @@ module FatConfig
     end
 
     # Return the absolute path names of all "classic" system config files for
-    # app_name with the basename variants of base. Return the lowest priority
-    # files first, highest last.  Prefix the search locations with dir_prefix if
-    # given.
+    # app_name in the current style with the basename variants of base. Return
+    # the lowest priority files first, highest last.  Prefix the search
+    # locations with dir_prefix if given.
     def find_classic_user_config_file(base = app_name)
       env_config = ENV["#{app_name.upcase}_CONFIG"]
       if env_config && File.readable?(config = File.join(root_prefix, File.expand_path(env_config)))
