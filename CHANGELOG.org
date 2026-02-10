@@ -6,6 +6,10 @@
    user would find useful.
 5. Give each heading a version number and an inactive date (C-c ! is useful here).
 
+* Version 0.8.0
+- Allow user to specify an explicit user or system config directory, ignoring
+  XDG and classic convention.
+
 * Version 0.7.1 [2026-02-06 Fri]
 - Improved error diagnostics on ParseError
 

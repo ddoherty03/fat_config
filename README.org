@@ -30,6 +30,7 @@ the files in the proper priority.  It can be set to read ~YAML~, ~TOML~,
 - [[#usage][Usage:]]
   - [[#following-xdg-standards][Following XDG Standards]]
   - [[#following-classic-unix-standards][Following Classic UNIX Standards]]
+  - [[#explicitly-providing-config-directories][Explicitly Providing Config Directories]]
   - [[#available-config-file-styles][Available Config File Styles]]
   - [[#hash-keys][Hash Keys]]
   - [[#hash-values][Hash Values]]
@@ -164,6 +165,11 @@ hypothetical application called ~myapp~:
    ~Hash~, it is used directly and merged into the hash returned from the
    prior methods.
 
+** Explicitly Providing Config Directories
+ When the =Reader= is created, the user can give an explicit =user_dir:=,
+ =sys_dir:= parameter or both.  If given, the XDG or classic conventions for
+ locating config files are ignored regardless of the setting of the =xdg:=
+ parameter.
 ** Available Config File Styles
 ~FatConfig::Reader.new~ takes the optional keyword argument, ~:style~, to
 indicate what style to use for config files.  It can be one of:
@@ -253,11 +259,19 @@ sought.  It also takes a few optional keyword arguments:
   files, or ~false~, to follow classic UNIX conventions.
 - ~root_prefix:~, to locate the root of the file system somewhere other than
   ~/~.  This is probably only useful in testing ~FatConfig~.
+- =user_dir:=, to explicitly set the name of the user directory in which to
+  look for the app's config files, thus ignoring the setting of =xdg:= for the
+  user-level settings.
+- =sys_dir:=, to explicitly set the name of the system directory in which to
+  look for the app's config files, thus ignoring the setting of =xdg:= for the
+  system-level settings.
 
 #+begin_src ruby :eval no
   reader1 = FatConfig.new('labrat')  # Use XDG and YAML
   reader2 = FatConfig.new('labrat', style: 'toml')  # Use XDG and TOML
   reader3 = FatConfig.new('labrat', style: 'ini', xdg: false)  # Use classic UNIX and INI style
+  reader4 = FatConfig.new('labrat', user_dir: '~/labrat')  # Look in ~/labrat for user settings
+  reader5 = FatConfig.new('labrat', sys_dir: '/etc/labrat')  # Look in /etc/labrat for system settings
 #+end_src
 
 ** Calling the ~read~ method on a ~Reader~
