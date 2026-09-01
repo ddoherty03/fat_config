@@ -9,8 +9,11 @@ module FatConfig
         let(:reader) { Reader.new(appname, root_prefix: root) }
 
         around do |ex|
+          # Set these, otherwise it will use programmer's user name
           old_home = ENV['HOME']
+          old_xdg = ENV['XDG_CONFIG_HOME']
           ENV['HOME'] = File.join('/home', username)
+          ENV['XDG_CONFIG_HOME'] = "/home/#{username}/.config"
           sys_dir = File.join(root, 'etc', 'xdg', appname)
           FileUtils.mkdir_p(sys_dir)
           sys_file = File.join(sys_dir, 'config.yml')
@@ -23,6 +26,7 @@ module FatConfig
           FileUtils.rm_rf(sys_dir)
           FileUtils.rm_rf(usr_dir)
           ENV['HOME'] = old_home
+          ENV['XDG_CONFIG_HOME'] = old_xdg
         end
 
         it "finds user files" do
